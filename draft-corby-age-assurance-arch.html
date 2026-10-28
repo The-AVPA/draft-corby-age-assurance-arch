@@ -1,0 +1,2386 @@
+<!DOCTYPE html>
+<html lang="en" class="Internet-Draft">
+<head>
+<meta charset="utf-8">
+<meta content="Common,Latin" name="scripts">
+<meta content="initial-scale=1.0" name="viewport">
+<title>Age Assurance Architecture</title>
+<meta content="Iain Corby" name="author">
+<meta content="
+       This document describes a technology-neutral architecture for age assurance on the Internet, drawing on the framework established by ISO/IEC 27566-1 and the levels of assurance defined in IEEE 2089.1. It sets out the methods of age assurance (verification, estimation and inference), how their performance is measured and assured, the roles and trust relationships involved, and how results can be reused across services without creating persistent identifiers. Its main contribution is a model for communicating trustworthy, privacy-preserving age assertions between independently governed systems. It treats assurance, privacy, interoperability, resistance to circumvention and inclusion as measurable properties of complete age assurance systems, and distinguishes the capabilities of existing technical components from the additional safeguards necessary for secure and privacy-preserving deployment. It is neutral on whether age restrictions should exist, at what ages and for which services, which are policy questions outside its scope; it is not neutral about how safely and privately such restrictions are implemented where they do exist. 
+    " name="description">
+<meta content="xml2rfc 3.34.1" name="generator">
+<meta content="age assurance" name="keyword">
+<meta content="age verification" name="keyword">
+<meta content="age estimation" name="keyword">
+<meta content="privacy" name="keyword">
+<meta content="unlinkability" name="keyword">
+<meta content="draft-corby-age-assurance-arch-latest" name="ietf.draft">
+<!-- Generator version information:
+  xml2rfc 3.34.1
+    Python 3.14.8
+    ConfigArgParse 1.8.0
+    google-i18n-address 3.1.1
+    intervaltree 3.2.1
+    Jinja2 3.1.6
+    lxml 6.1.1
+    natsort 8.4.0
+    platformdirs 4.13.4
+    pycountry 24.6.1
+    PyYAML 6.0.3
+    requests 2.33.1
+    wcwidth 0.9.2
+-->
+<link href="draft-corby-age-assurance-arch.xml" rel="alternate" type="application/rfc+xml">
+<link href="#copyright" rel="license">
+<style type="text/css">@font-face {
+  font-family: 'Lora';
+  font-style: italic;
+  font-weight: 400;
+  font-display: swap;
+  src: local('Lora Italic'), local('Lora-Italic'), url('https://martinthomson.github.io/rfc-css/fonts/lora-italic-cyrillic-ext.woff2') format('woff2');
+  unicode-range: U+0460-052F, U+1C80-1C88, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
+}
+@font-face {
+  font-family: 'Lora';
+  font-style: italic;
+  font-weight: 400;
+  font-display: swap;
+  src: local('Lora Italic'), local('Lora-Italic'), url('https://martinthomson.github.io/rfc-css/fonts/lora-italic-cyrillic-ext.woff2') format('woff2');
+  unicode-range: U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}
+@font-face {
+  font-family: 'Lora';
+  font-style: italic;
+  font-weight: 400;
+  font-display: swap;
+  src: local('Lora Italic'), local('Lora-Italic'), url('https://martinthomson.github.io/rfc-css/fonts/lora-italic-vietnamese.woff2') format('woff2');
+  unicode-range: U+0102-0103, U+0110-0111, U+1EA0-1EF9, U+20AB;
+}
+@font-face {
+  font-family: 'Lora';
+  font-style: italic;
+  font-weight: 400;
+  font-display: swap;
+  src: local('Lora Italic'), local('Lora-Italic'), url('https://martinthomson.github.io/rfc-css/fonts/lora-italic-latin-ext.woff2') format('woff2');
+  unicode-range: U+0100-024F, U+0259, U+1E00-1EFF, U+2020, U+20A0-20AB, U+20AD-20CF, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face {
+  font-family: 'Lora';
+  font-style: italic;
+  font-weight: 400;
+  font-display: swap;
+  src: local('Lora Italic'), local('Lora-Italic'), url('https://martinthomson.github.io/rfc-css/fonts/lora-italic-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: 'Lora';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: local('Lora Regular'), local('Lora-Regular'), url('https://martinthomson.github.io/rfc-css/fonts/lora-regular-cyrillic-ext.woff2') format('woff2');
+  unicode-range: U+0460-052F, U+1C80-1C88, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
+}
+@font-face {
+  font-family: 'Lora';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: local('Lora Regular'), local('Lora-Regular'), url('https://martinthomson.github.io/rfc-css/fonts/lora-regular-cyrillic.woff2') format('woff2');
+  unicode-range: U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}
+@font-face {
+  font-family: 'Lora';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: local('Lora Regular'), local('Lora-Regular'), url('https://martinthomson.github.io/rfc-css/fonts/lora-regular-vietnamese.woff2') format('woff2');
+  unicode-range: U+0102-0103, U+0110-0111, U+1EA0-1EF9, U+20AB;
+}
+@font-face {
+  font-family: 'Lora';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: local('Lora Regular'), local('Lora-Regular'), url('https://martinthomson.github.io/rfc-css/fonts/lora-regular-latin-ext.woff2') format('woff2');
+  unicode-range: U+0100-024F, U+0259, U+1E00-1EFF, U+2020, U+20A0-20AB, U+20AD-20CF, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face {
+  font-family: 'Lora';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: local('Lora Regular'), local('Lora-Regular'), url('https://martinthomson.github.io/rfc-css/fonts/lora-regular-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: 'Lora';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: local('Lora Bold'), local('Lora-Bold'), url('https://martinthomson.github.io/rfc-css/fonts/lora-bold-cyrillic-ext.woff2') format('woff2');
+  unicode-range: U+0460-052F, U+1C80-1C88, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
+}
+@font-face {
+  font-family: 'Lora';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: local('Lora Bold'), local('Lora-Bold'), url('https://martinthomson.github.io/rfc-css/fonts/lora-bold-cyrillic.woff2') format('woff2');
+  unicode-range: U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}
+@font-face {
+  font-family: 'Lora';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: local('Lora Bold'), local('Lora-Bold'), url('https://martinthomson.github.io/rfc-css/fonts/lora-bold-vietnamese.woff2') format('woff2');
+  unicode-range: U+0102-0103, U+0110-0111, U+1EA0-1EF9, U+20AB;
+}
+@font-face {
+  font-family: 'Lora';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: local('Lora Bold'), local('Lora-Bold'), url('https://martinthomson.github.io/rfc-css/fonts/lora-bold-latin-ext.woff2') format('woff2');
+  unicode-range: U+0100-024F, U+0259, U+1E00-1EFF, U+2020, U+20A0-20AB, U+20AD-20CF, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face {
+  font-family: 'Lora';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: local('Lora Bold'), local('Lora-Bold'), url('https://martinthomson.github.io/rfc-css/fonts/lora-bold-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: 'Lora';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: local('Lora SemiBold'), local('Lora-SemiBold'), url('https://martinthomson.github.io/rfc-css/fonts/lora-semibold-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+  font-family: 'Oxygen Mono';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: local('Oxygen Mono'), local('OxygenMono-Regular'), url('https://martinthomson.github.io/rfc-css/fonts/oxygenmono-regular-latin-ext.woff2') format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face {
+  font-family: 'Oxygen Mono';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: local('Oxygen Mono'), local('OxygenMono-Regular'), url('https://martinthomson.github.io/rfc-css/fonts/oxygenmono-regular-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+  font-family: 'Sofia Sans Semi Condensed';
+  font-style: italic;
+  font-weight: 1 1000;
+  src: url('https://martinthomson.github.io/rfc-css/fonts/sofiasanssemicondensed-italic-cyrillic-ext.woff2') format('woff2');
+  unicode-range: U+0460-052F, U+1C80-1C8A, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
+}
+@font-face {
+  font-family: 'Sofia Sans Semi Condensed';
+  font-style: italic;
+  font-weight: 1 1000;
+  src: url('https://martinthomson.github.io/rfc-css/fonts/sofiasanssemicondensed-italic-cyrillic.woff2') format('woff2');
+  unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}
+@font-face {
+  font-family: 'Sofia Sans Semi Condensed';
+  font-style: italic;
+  font-weight: 1 1000;
+  src: url('https://martinthomson.github.io/rfc-css/fonts/sofiasanssemicondensed-italic-greek.woff2') format('woff2');
+  unicode-range: U+0370-0377, U+037A-037F, U+0384-038A, U+038C, U+038E-03A1, U+03A3-03FF;
+}
+@font-face {
+  font-family: 'Sofia Sans Semi Condensed';
+  font-style: italic;
+  font-weight: 1 1000;
+  src: url('https://martinthomson.github.io/rfc-css/fonts/sofiasanssemicondensed-italic-latin-ext.woff2') format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face {
+  font-family: 'Sofia Sans Semi Condensed';
+  font-style: italic;
+  font-weight: 1 1000;
+  src: url('https://martinthomson.github.io/rfc-css/fonts/sofiasanssemicondensed-italic-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: 'Sofia Sans Semi Condensed';
+  font-style: normal;
+  font-weight: 1 1000;
+  src: url('https://martinthomson.github.io/rfc-css/fonts/sofiasanssemicondensed-regular-cyrillic-ext.woff2') format('woff2');
+  unicode-range: U+0460-052F, U+1C80-1C8A, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
+}
+@font-face {
+  font-family: 'Sofia Sans Semi Condensed';
+  font-style: normal;
+  font-weight: 1 1000;
+  src: url('https://martinthomson.github.io/rfc-css/fonts/sofiasanssemicondensed-regular-cyrillic.woff2') format('woff2');
+  unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}
+@font-face {
+  font-family: 'Sofia Sans Semi Condensed';
+  font-style: normal;
+  font-weight: 1 1000;
+  src: url('https://martinthomson.github.io/rfc-css/fonts/sofiasanssemicondensed-regular-greek.woff2') format('woff2');
+  unicode-range: U+0370-0377, U+037A-037F, U+0384-038A, U+038C, U+038E-03A1, U+03A3-03FF;
+}
+@font-face {
+  font-family: 'Sofia Sans Semi Condensed';
+  font-style: normal;
+  font-weight: 1 1000;
+  src: url('https://martinthomson.github.io/rfc-css/fonts/sofiasanssemicondensed-regular-latin-ext.woff2') format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face {
+  font-family: 'Sofia Sans Semi Condensed';
+  font-style: normal;
+  font-weight: 1 1000;
+  src: url('https://martinthomson.github.io/rfc-css/fonts/sofiasanssemicondensed-regular-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+:root {
+  color-scheme: light dark;
+  --background-color: #fff;
+  --text-color: #222;
+  --title-color: #191919;
+  --link-color: #2a6496;
+  --highlight-color: #f9f9f9;
+  --line-color: #eee;
+  --pilcrow-weak: #ddd;
+  --pilcrow-strong: #bbb;
+  --small-font-size: 14.5px;
+  --font-mono: 'Oxygen Mono', monospace;
+  --font-title: "Sofia Sans Semi Condensed", sans-serif;
+  scrollbar-color: #bbb #eee;
+}
+body {
+  max-width: 600px;
+  margin: 75px auto;
+  padding: 0 5px;
+  color: var(--text-color);
+  background-color: var(--background-color);
+  font: 16px/22px "Lora", serif;
+  scroll-behavior: smooth;
+}
+
+.ears {
+  display: none;
+}
+
+/* headings */
+section {
+  clear: both;
+}
+.section-number {
+  padding-right: 0.5em;
+}
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-title);
+  font-weight: 680;
+  margin: 0.8em 0 0.3em;
+  font-size-adjust: 0.5;
+  color: var(--title-color);
+}
+h1 {
+  &#title {
+    font-size: 32px;
+    line-height: 40px;
+    clear: both;
+    margin: 1.5em 0 0.2em;
+  }
+  &#rfcnum {
+    margin: 1.5em 0 0.2em;
+    & + h1#title {
+      margin: 0.2em 0;
+    }
+  }
+}
+
+h1, h2, h3 {
+  font-size: 22px;
+  line-height: 27px;
+}
+h4, h5, h6 {
+  font-size: 20px;
+  line-height: 24px;
+}
+
+/* general structure */
+.author {
+  padding-bottom: 0.3em;
+  vertical-align: top;
+}
+#abstract+p {
+  font-size: 18px;
+  line-height: 24px;
+  & code, & samp, & tt {
+    font-size: 16px;
+    line-height: 0;
+  }
+}
+
+p {
+  padding: 0;
+  margin: 0.5em 0;
+  text-align: left;
+}
+div {
+  margin: 0;
+}
+.alignRight {
+  margin: 1em 0;
+  &.art-text {
+    background-color: var(--highlight-color);
+    border: 1px solid var(--line-color);
+    border-radius: 3px;
+    padding: 0.5em 1em 0;
+    margin-bottom: 0.5em;
+    & pre {
+      padding: 0;
+      width: auto;
+    }
+  }
+  & > *:first-child {
+    border: none;
+    margin: 0;
+    float: right;
+    clear: both;
+  }
+  & > *:nth-child(2) {
+    clear: both;
+    display: block;
+    border: none;
+  }
+}
+svg {
+  display: block;
+  /* font-family isn't space-separated, but =~ will have to do */
+  &[font-family~="monospace" i], & [font-family~="monospace" i] {
+    font-family: var(--font-mono);
+  }
+}
+.alignCenter {
+  margin: 1em 0;
+  &.art-text {
+    background-color: var(--highlight-color);
+    border: 1px solid var(--line-color);
+    border-radius: 3px;
+    padding: 0.5em 1em 0;
+    margin-bottom: 0.5em;
+    & pre {
+      padding: 0;
+      width: auto;
+    }
+  }
+  & > *:first-child {
+    border: none;
+    /* this isn't optimal, but it's an existence proof.  PrinceXML doesn't
+       support flexbox yet.
+    */
+    display: table;
+    margin: 0 auto;
+  }
+}
+
+/* lists */
+ol, ul {
+  padding: 0;
+  margin: 0 0 0.5em 2em;
+  & :is(ol, ul) {
+    margin-left: 1em;
+  }
+}
+li {
+  margin: 0 0 0.25em 0;
+}
+ul.empty, .ulEmpty {
+  list-style-type: none;
+  & li {
+    margin-top: 0.5em;
+  }
+}
+:is(ul, ol).compact, .ulCompact, .olCompact {
+  margin: 0 0 0 2em;
+  & li {
+    margin: 0;
+    & :first-child { margin-top: 0; }
+    & :last-child { margin-bottom: 0; }
+  }
+}
+
+/* definition lists */
+dl {
+  clear: left;
+  --indent: 3ch;
+  /* --indent: attr(indent ch); not supported in any browser, but we can dream */
+  &.olPercent {
+    --indent: 5ch;
+    & > dt {
+      min-width: calc(var(--indent) - 2ch);
+      float: none;
+    }
+  }
+
+  dl > dd > & {
+    margin-top: 0.5em;
+    margin-bottom: 0;
+  }
+
+  &:not(.dlNewline) > dt {
+    float: left;
+    margin-right: 2ch;
+    min-width: 8ch;
+  }
+  & > dd {
+    margin-bottom: .8em;
+    margin-left: var(--indent) !important; /* stupid element overrides */
+    min-height: 2ex;
+  }
+}
+:is(dl.compact, .dlCompact) > dd {
+  margin-bottom: 0;
+  & > :is(:first-child, .break:first-child + *) {
+    margin-top: 0;
+  }
+  & > :is(:last-child) {
+    margin-bottom: 0;
+  }
+}
+:is(dd, span).break {
+  display: none;
+}
+
+/* links */
+a {
+  text-decoration: none;
+  &[href] {
+    color: var(--link-color);
+    &:hover { text-decoration: underline; }
+    &.selfRef {
+      color: var(--text-color);
+      &:hover {
+        text-decoration: none;
+        background-color: var(--highlight-color);
+      }
+    }
+  }
+}
+.iref + a[href].internal {
+  color: var(--text-color);
+}
+a.xref:is(.cite, .auto), :is(#status-of-memo, #copyright) a {
+  white-space: nowrap;
+}
+
+/* Figures */
+tt, code, pre {
+  background-color: var(--highlight-color);
+  font: 14px/22px var(--font-mono);
+}
+tt, code {
+  /* changing the font for inline elements leads to different ascender
+     and descender heights; as we want to retain baseline alignment,
+     remove leading to avoid altering the final height of lines
+     note: this fails if these blocks take an entire line,
+     a different solution would be great */
+  line-height: 0;
+}
+:is(h1, h2, h3, h4, h5, h6) :is(tt, code) {
+  font-size: 84%;
+}
+pre {
+  border: 1px solid var(--line-color);
+  font-size: 13.5px;
+  line-height: 16px;
+  letter-spacing: -0.2px;
+  margin: 5px;
+  padding: 5px;
+}
+img {
+  max-width: 100%;
+}
+figure {
+  margin: 0.5em 0;
+  padding: 0;
+  & blockquote {
+    margin: 0.8em 0.4em 0.4em;
+  }
+}
+figcaption, caption {
+  font-style: italic;
+  margin: 0.5em 1.5em;
+  text-align: left;
+  caption-side: bottom;
+}
+@media screen {
+  /* Auto-collapse boilerplate. */
+  :is(#status-of-memo, #copyright) {
+    & p {
+      margin: -2px 0;
+      max-height: 0;
+      transition: max-height 2s ease, margin 0.5s ease 0.5s;
+      overflow: hidden;
+    }
+    &:hover p,
+    & h2:target ~ p {
+      margin: 0.5em 0;
+      max-height: 500px;
+      overflow: auto;
+    }
+  }
+  pre, svg {
+    display: inline-block;
+    /* In the horizontal direction, sometimes people make over-sized figures.
+       Scrollbars for those is therefore necessary: auto adds them as necessary..
+       In the vertical direction, the line-height can combine with the font
+       asender/descender height to produce scrollbars: hidden avoids that. */
+    overflow: auto hidden;
+  }
+  pre {
+    max-width: 100%;
+    width: calc(100% - 22px - 1em);
+  }
+  svg {
+    max-width: calc(100% - 22px - 1em);
+  }
+  figure pre {
+    display: block;
+    width: calc(100% - 25px);
+  }
+  :is(pre, svg) + .pilcrow {
+    display: inline-block;
+    vertical-align: text-bottom;
+    padding-bottom: 8px;
+  }
+}
+
+/* aside, blockquote */
+aside, blockquote {
+  margin-left: 0;
+  padding: 0 2em;
+  font-style: italic;
+}
+blockquote {
+  margin: 1em 0;
+  border-left: 2px var(--pilcrow-strong) solid;
+}
+cite {
+  display: block;
+  text-align: right;
+  font-style: italic;
+}
+
+/* tables */
+table {
+  width: auto;
+  max-width: 100%;
+  margin: 0 0 1em;
+  border-collapse: collapse;
+  &.right { margin-left: auto; }
+  &.center { margin-left: auto; margin-right: auto; }
+  &.left { margin-right: auto; }
+  & .text-left { text-align: left; }
+  & .text-center { text-align: center; }
+  & .text-right { text-align: right; }
+  & caption {
+    margin: 0;
+    padding: 3px 0 3px 1em;
+  }
+  & p { margin: 0; }
+}
+
+thead, tbody {
+  border: 1px solid var(--line-color);
+}
+th, td {
+  text-align: left;
+  vertical-align: top;
+  padding: 5px 10px;
+}
+th {
+  background-color: var(--line-color);
+}
+:is(tr:nth-child(2n), thead+tbody > tr:nth-child(2n+1)) > td {
+  background-color: var(--background-color);
+}
+:is(tr:nth-child(2n+1), thead+tbody > tr:nth-child(2n)) > td {
+  background-color: var(--highlight-color);
+}
+
+/* pilcrow */
+a.pilcrow {
+  margin-left: 3px;
+  opacity: 0.2;
+  user-select: none;
+  &[href] {
+    color: var(--pilcrow-weak);
+    &:hover { text-decoration: none; }
+  }
+  @media not print {
+    :hover > &, &:focus {
+      opacity: 1;
+    }
+    &[href]:hover {
+      color: var(--pilcrow-strong);
+      background-color: transparent;
+    }
+  }
+  @media print {
+    display: none;
+  }
+}
+
+/* misc */
+hr {
+  border: 0;
+  border-top: 1px solid var(--line-color);
+}
+.bcp14 {
+  font-variant: small-caps;
+  font-weight: 600;
+  font-size: var(--small-font-size);
+}
+.role {
+  font-variant: all-small-caps;
+}
+sub, sup {
+  line-height: 1;
+  font-size: 80%;
+}
+
+/* info block */
+#identifiers {
+  margin: 0;
+  font-size: var(--small-font-size);
+  line-height: 18px;
+  --identifier-width: 15ch;
+  & dt {
+    width: var(--identifier-width);
+    min-width: var(--identifier-width);
+    clear: left;
+    float: left;
+    text-align: right;
+    margin-right: 1ch;
+  }
+  & dd {
+    margin: 0;
+    margin-left: calc(1em + var(--identifier-width)) !important;
+    min-width: 5em;
+  }
+  & .authors {
+    & .author {
+      display: inline-block;
+      margin-right: 1.5em;
+    }
+    & .org {
+      font-style: italic;
+    }
+  }
+}
+
+/* The prepared/rendered info at the very bottom of the page */
+.docInfo {
+  color: #999;
+  font-size: 0.9em;
+  font-style: italic;
+  margin-top: 2em;
+  & .prepared {
+    float: right;
+  }
+}
+
+/* table of contents */
+#toc {
+  padding: 0.75em 0 2em 0;
+  margin-bottom: 1em;
+
+  & nav {
+    & ul {
+      margin: 0 0.5em 0 0;
+      padding: 0;
+      list-style: none;
+    }
+    & li {
+      line-height: 1.3em;
+      margin: 2px 0;
+      padding-left: 1.2em;
+      text-indent: -1.2em;
+    }
+  }
+  & a.xref {
+    white-space: normal;
+  }
+}
+
+.references {
+  & > dt {
+    text-align: right;
+    font-weight: bold;
+    min-width: 10ch;
+    margin-right: 1.5ch;
+    &:target::before {
+      content: "⇒";
+      margin: 0 10px 0 -25px;
+    }
+  }
+  & > dd {
+    margin-left: 12ch !important;
+    overflow: visible;
+    & .refInstance {
+      margin-bottom: 0.8em;
+    }
+    & .ascii {
+      margin-bottom: 0.25em;
+    }
+  }
+}
+
+#rfc\.index\.index + ul {
+  margin-left: 0;
+}
+
+/* authors */
+address.vcard {
+  font-style: normal;
+  max-width: 20em;
+  margin: 1em auto 1em 0;
+
+  & .nameRole {
+    font-weight: 700;
+    margin-left: 0;
+  }
+  & .label {
+    margin: 0.5em 0;
+  }
+  & .type {
+    display: none;
+  }
+  & .alternative-contact {
+    margin: 0.5em 0 0.25em 0;
+  }
+  & .non-ascii {
+    margin: 0 0 0 2em;
+  }
+  & div.left {
+    text-align: left;
+  }
+  & div.right {
+    text-align: right;
+  }
+}
+
+hr.addr {
+  border-top: 1px dashed;
+  margin: 0;
+  color: #ddd;
+  max-width: calc(100% - 16px);
+}
+@media (min-width: 500px) {
+  #authors-addresses {
+    & > section {
+      column-count: 2;
+      column-gap: 20px;
+    }
+    & > section > h2 {
+      column-span: all;
+    }
+    /* hack for break-inside: avoid-column */
+    & address {
+      display: inline-block;
+      break-inside: avoid-column;
+    }
+  }
+}
+
+/* Comments */
+.rfcEditorRemove {
+  & p:first-of-type {
+    font-style: italic;
+  }
+}
+.cref {
+  background-color: rgba(249, 232, 105, 0.3);
+  padding: 2px 4px;
+}
+.crefSource {
+  font-style: italic;
+}
+
+@media screen {
+  #toc {
+    & nav {
+      font-family: var(--font-title);
+      font-weight: 360;
+      & > ul { margin-bottom: 2em; }
+      & ul {
+        margin: 0 0 0 4px;
+        & :is(p, li) {
+          margin: 2px 0;
+        }
+      }
+    }
+    & a.toplink {
+      float: right;
+    }
+  }
+}
+@media not screen {
+  #toc a.toplink {
+    display: none;
+  }
+}
+
+
+/* TOC layout for smaller screens */
+@media screen and (max-width: 929px) {
+  #toc {
+    position: fixed;
+    z-index: 2;
+    top: 0;
+    right: 0;
+    padding: 1px 0 0 0;
+    margin: 0;
+    border-bottom: 1px solid #ccc;
+    opacity: 0.6;
+    & h2 {
+      margin: 0;
+      padding: 2px 0 2px 6px;
+      padding-right: 1em;
+      font-size: 18px;
+      line-height: 24px;
+      min-width: 190px;
+      text-align: right;
+      background-color: #444;
+      color: white;
+      cursor: pointer;
+      &::before { /* css hamburger */
+        float: right;
+        position: relative;
+        width: 1em;
+        height: 1px;
+        left: -164px;
+        margin: 8px 0 0 0;
+        background: white none repeat scroll 0 0;
+        box-shadow: 0 4px 0 0 white, 0 8px 0 0 white;
+        content: "";
+      }
+    }
+    & nav {
+      display: none;
+      background-color: var(--background-color);
+      padding: 0.5em 1em 1em;
+      overflow: auto;
+      overscroll-behavior: contain;
+      height: calc(100vh - 48px);
+      border-left: 1px solid #ddd;
+    }
+    &.active {
+      opacity: 1;
+      & nav { display: block; }
+    }
+    /* Make the collapsed ToC header render white on gray also when it's a link */
+    & h2 a,
+    & h2 a:is(:link, :focus, :hover),
+    & a.toplink,
+    & a.toplink:hover {
+      color: white;
+      background-color: #444;
+      text-decoration: none;
+    }
+    & a.toplink {
+      margin: 2px 0.5em 0;
+    }
+  }
+}
+
+/* TOC layout for wide screens */
+@media screen and (min-width: 930px) {
+  body {
+    padding-right: 360px;
+    padding-right: calc(min(180px + 20%, 500px));
+  }
+  #toc {
+    position: fixed;
+    bottom: 0;
+    right: 0;
+    right: calc(50vw - 480px);
+    width: 312px;
+    margin: 0;
+    padding: 0;
+    z-index: 1;
+    & h2 {
+      margin: 0;
+      padding: 0.25em 1em 1em 0;
+    }
+    & nav {
+      display: block;
+      height: calc(90vh - 84px);
+      bottom: 0;
+      padding: 0.5em 0 2em;
+      overflow: auto;
+      overscroll-behavior: contain;
+      scrollbar-width: thin;
+    }
+    & a.toplink {
+      margin: 8px 0.5em 0;
+    }
+  }
+  img { /* future proofing */
+    max-width: 100%;
+    height: auto;
+  }
+}
+
+/* pagination */
+@media print {
+  body {
+    width: 100%;
+  }
+  p {
+    orphans: 3;
+    widows: 3;
+  }
+  #n-copyright-notice {
+    border-bottom: none;
+  }
+  #toc {
+    page-break-before: always;
+    border-top: none;
+    padding-top: 0;
+  }
+  #n-introduction {
+    page-break-before: always;
+  }
+  figure, pre, .vcard {
+    page-break-inside: avoid;
+  }
+  h1, h2, h3, h4, h5, h6 {
+    page-break-after: avoid;
+  }
+  :is(h2, h3, h4, h5, h6)+*, dd {
+    page-break-before: avoid;
+  }
+  pre {
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    font-size: 10pt;
+  }
+  table {
+    border: 1px solid #ddd;
+  }
+  td {
+    border-top: 1px solid #ddd;
+  }
+}
+
+@page :first {
+  padding-top: 0;
+  @top-left {
+    content: normal;
+    border: none;
+  }
+  @top-center {
+    content: normal;
+    border: none;
+  }
+  @top-right {
+    content: normal;
+    border: none;
+  }
+}
+
+@page {
+  size: A4;
+  margin-bottom: 45mm;
+  padding-top: 20px;
+}
+
+/* Dark mode. */
+@media (prefers-color-scheme: dark) {
+:root {
+  --background-color: #121212;
+  --text-color: #f0f0f0;
+  --title-color: #fff;
+  --link-color: #4da4f0;
+  --highlight-color: #282828;
+  --line-color: #444;
+  --pilcrow-weak: #444;
+  --pilcrow-strong: #666;
+  scrollbar-color: #777 #333;
+}
+}
+
+/* SVG Trick: a prefix match works because only black and white are allowed */
+svg {
+  & :is([stroke="black"], [stroke^="#000"]) {
+    stroke: var(--text-color);
+  }
+  & :is([stroke="white"], [stroke^="#fff"]) {
+    stroke: var(--background-color);
+  }
+  & :is([fill="black"], [fill^="#000"], :not([fill])) {
+    fill: var(--text-color);
+  }
+  & :is([fill="white"], [fill^="#fff"]) {
+    fill: var(--background-color);
+  }
+}
+</style>
+
+</head>
+<body class="xml2rfc">
+<table class="ears">
+<thead><tr>
+<td class="left">Internet-Draft</td>
+<td class="center">Age Assurance Architecture</td>
+<td class="right">October 2026</td>
+</tr></thead>
+<tfoot><tr>
+<td class="left">Corby</td>
+<td class="center">Expires 1 May 2027</td>
+<td class="right">[Page]</td>
+</tr></tfoot>
+</table>
+<div id="external-metadata" class="document-information"></div>
+<div id="internal-metadata" class="document-information">
+<dl id="identifiers">
+<dt class="label-workgroup">Workgroup:</dt>
+<dd class="workgroup">Network Working Group</dd>
+<dt class="label-internet-draft">Internet-Draft:</dt>
+<dd class="internet-draft">draft-corby-age-assurance-arch-latest</dd>
+<dt class="label-published">Published:</dt>
+<dd class="published">
+<time datetime="2026-10-28" class="published">28 October 2026</time>
+    </dd>
+<dt class="label-intended-status">Intended Status:</dt>
+<dd class="intended-status">Informational</dd>
+<dt class="label-expires">Expires:</dt>
+<dd class="expires"><time datetime="2027-05-01">1 May 2027</time></dd>
+<dt class="label-authors">Author:</dt>
+<dd class="authors">
+<div class="author">
+      <div class="author-name">I. Corby</div>
+<div class="org">Age Verification Providers Association</div>
+</div>
+</dd>
+</dl>
+</div>
+<h1 id="title">Age Assurance Architecture</h1>
+<section id="section-abstract">
+      <h2 id="abstract"><a href="#abstract" class="selfRef">Abstract</a></h2>
+<p id="section-abstract-1">This document describes a technology-neutral architecture for age assurance on the Internet, drawing on the framework established by ISO/IEC 27566-1 and the levels of assurance defined in IEEE 2089.1. It sets out the methods of age assurance (verification, estimation and inference), how their performance is measured and assured, the roles and trust relationships involved, and how results can be reused across services without creating persistent identifiers. Its main contribution is a model for communicating trustworthy, privacy-preserving age assertions between independently governed systems. It treats assurance, privacy, interoperability, resistance to circumvention and inclusion as measurable properties of complete age assurance systems, and distinguishes the capabilities of existing technical components from the additional safeguards necessary for secure and privacy-preserving deployment. It is neutral on whether age restrictions should exist, at what ages and for which services, which are policy questions outside its scope; it is not neutral about how safely and privately such restrictions are implemented where they do exist.<a href="#section-abstract-1" class="pilcrow">¶</a></p>
+</section>
+<section class="note rfcEditorRemove" id="section-note.1">
+      <h2 id="name-about-this-document">
+<a href="#name-about-this-document" class="section-name selfRef">About This Document</a>
+      </h2>
+<p id="section-note.1-1">This note is to be removed before publishing as an RFC.<a href="#section-note.1-1" class="pilcrow">¶</a></p>
+<p id="section-note.1-2">
+        The latest revision of this draft can be found at <span><a href="https://the-avpa.github.io/draft-corby-age-assurance-arch/draft-corby-age-assurance-arch.html">https://the-avpa.github.io/draft-corby-age-assurance-arch/draft-corby-age-assurance-arch.html</a></span>.
+        Status information for this document may be found at <span><a href="https://datatracker.ietf.org/doc/draft-corby-age-assurance-arch/">https://datatracker.ietf.org/doc/draft-corby-age-assurance-arch/</a></span>.<a href="#section-note.1-2" class="pilcrow">¶</a></p>
+<p id="section-note.1-3">
+        Discussion of this document takes place on the
+        architecture-discuss Working Group mailing list (<span><a href="mailto:architecture-discuss@ietf.org">mailto:architecture-discuss@ietf.org</a></span>),
+        which is archived at <span><a href="https://mailarchive.ietf.org/arch/browse/architecture-discuss/">https://mailarchive.ietf.org/arch/browse/architecture-discuss/</a></span>.
+        Subscribe at <span><a href="https://www.ietf.org/mailman/listinfo/architecture-discuss/">https://www.ietf.org/mailman/listinfo/architecture-discuss/</a></span>.<a href="#section-note.1-3" class="pilcrow">¶</a></p>
+<p id="section-note.1-4">Source for this draft and an issue tracker can be found at
+        <span><a href="https://github.com/The-AVPA/draft-corby-age-assurance-arch">https://github.com/The-AVPA/draft-corby-age-assurance-arch</a></span>.<a href="#section-note.1-4" class="pilcrow">¶</a></p>
+</section>
+<div id="status-of-memo">
+<section id="section-boilerplate.1">
+        <h2 id="name-status-of-this-memo">
+<a href="#name-status-of-this-memo" class="section-name selfRef">Status of This Memo</a>
+        </h2>
+<p id="section-boilerplate.1-1">
+        This Internet-Draft is submitted in full conformance with the
+        provisions of BCP 78 and BCP 79.<a href="#section-boilerplate.1-1" class="pilcrow">¶</a></p>
+<p id="section-boilerplate.1-2">
+        Internet-Drafts are working documents of the Internet Engineering Task
+        Force (IETF). Note that other groups may also distribute working
+        documents as Internet-Drafts. The list of current Internet-Drafts is
+        at <span><a href="https://datatracker.ietf.org/drafts/current/">https://datatracker.ietf.org/drafts/current/</a></span>.<a href="#section-boilerplate.1-2" class="pilcrow">¶</a></p>
+<p id="section-boilerplate.1-3">
+        Internet-Drafts are draft documents valid for a maximum of six months
+        and may be updated, replaced, or obsoleted by other documents at any
+        time. It is inappropriate to use Internet-Drafts as reference
+        material or to cite them other than as "work in progress."<a href="#section-boilerplate.1-3" class="pilcrow">¶</a></p>
+<p id="section-boilerplate.1-4">
+        This Internet-Draft will expire on 1 May 2027.<a href="#section-boilerplate.1-4" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="copyright">
+<section id="section-boilerplate.2">
+        <h2 id="name-copyright-notice">
+<a href="#name-copyright-notice" class="section-name selfRef">Copyright Notice</a>
+        </h2>
+<p id="section-boilerplate.2-1">
+            Copyright (c) 2026 IETF Trust and the persons identified as the
+            document authors. All rights reserved.<a href="#section-boilerplate.2-1" class="pilcrow">¶</a></p>
+<p id="section-boilerplate.2-2">
+            This document is subject to BCP 78 and the IETF Trust's Legal
+            Provisions Relating to IETF Documents
+            (<span><a href="https://trustee.ietf.org/license-info">https://trustee.ietf.org/license-info</a></span>) in effect on the date of
+            publication of this document. Please review these documents
+            carefully, as they describe your rights and restrictions with
+            respect to this document. Code Components extracted from this
+            document must include Revised BSD License text as described in
+            Section 4.e of the Trust Legal Provisions and are provided without
+            warranty as described in the Revised BSD License.<a href="#section-boilerplate.2-2" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="toc">
+<section id="section-toc.1">
+        <a href="#" onclick="scroll(0,0)" class="toplink">▲</a><h2 id="name-table-of-contents">
+<a href="#name-table-of-contents" class="section-name selfRef">Table of Contents</a>
+        </h2>
+<nav class="toc"><ul class="compact toc ulBare ulEmpty">
+<li class="compact toc ulBare ulEmpty" id="section-toc.1-1.1">
+            <p id="section-toc.1-1.1.1" class="keepWithNext"><a href="#section-1" class="auto internal xref">1</a>.  <a href="#name-introduction" class="internal xref">Introduction</a></p>
+<ul class="compact toc ulBare ulEmpty">
+<li class="compact toc ulBare ulEmpty" id="section-toc.1-1.1.2.1">
+                <p id="section-toc.1-1.1.2.1.1" class="keepWithNext"><a href="#section-1.1" class="auto internal xref">1.1</a>.  <a href="#name-related-work" class="internal xref">Related Work</a></p>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.1.2.2">
+                <p id="section-toc.1-1.1.2.2.1" class="keepWithNext"><a href="#section-1.2" class="auto internal xref">1.2</a>.  <a href="#name-terminology" class="internal xref">Terminology</a></p>
+</li>
+            </ul>
+</li>
+          <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.2">
+            <p id="section-toc.1-1.2.1"><a href="#section-2" class="auto internal xref">2</a>.  <a href="#name-methods-of-age-assurance" class="internal xref">Methods of Age Assurance</a></p>
+<ul class="compact toc ulBare ulEmpty">
+<li class="compact toc ulBare ulEmpty" id="section-toc.1-1.2.2.1">
+                <p id="section-toc.1-1.2.2.1.1"><a href="#section-2.1" class="auto internal xref">2.1</a>.  <a href="#name-age-verification" class="internal xref">Age Verification</a></p>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.2.2.2">
+                <p id="section-toc.1-1.2.2.2.1"><a href="#section-2.2" class="auto internal xref">2.2</a>.  <a href="#name-age-estimation" class="internal xref">Age Estimation</a></p>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.2.2.3">
+                <p id="section-toc.1-1.2.2.3.1"><a href="#section-2.3" class="auto internal xref">2.3</a>.  <a href="#name-age-inference" class="internal xref">Age Inference</a></p>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.2.2.4">
+                <p id="section-toc.1-1.2.2.4.1"><a href="#section-2.4" class="auto internal xref">2.4</a>.  <a href="#name-parental-and-guardian-invol" class="internal xref">Parental and Guardian Involvement</a></p>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.2.2.5">
+                <p id="section-toc.1-1.2.2.5.1"><a href="#section-2.5" class="auto internal xref">2.5</a>.  <a href="#name-reusable-age-assurance" class="internal xref">Reusable Age Assurance</a></p>
+</li>
+            </ul>
+</li>
+          <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.3">
+            <p id="section-toc.1-1.3.1"><a href="#section-3" class="auto internal xref">3</a>.  <a href="#name-measuring-and-assuring-age-" class="internal xref">Measuring and Assuring Age Assurance</a></p>
+<ul class="compact toc ulBare ulEmpty">
+<li class="compact toc ulBare ulEmpty" id="section-toc.1-1.3.2.1">
+                <p id="section-toc.1-1.3.2.1.1"><a href="#section-3.1" class="auto internal xref">3.1</a>.  <a href="#name-components-of-assurance" class="internal xref">Components of Assurance</a></p>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.3.2.2">
+                <p id="section-toc.1-1.3.2.2.1"><a href="#section-3.2" class="auto internal xref">3.2</a>.  <a href="#name-levels-of-assurance" class="internal xref">Levels of Assurance</a></p>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.3.2.3">
+                <p id="section-toc.1-1.3.2.3.1"><a href="#section-3.3" class="auto internal xref">3.3</a>.  <a href="#name-independent-testing-and-cer" class="internal xref">Independent Testing and Certification</a></p>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.3.2.4">
+                <p id="section-toc.1-1.3.2.4.1"><a href="#section-3.4" class="auto internal xref">3.4</a>.  <a href="#name-inclusion" class="internal xref">Inclusion</a></p>
+</li>
+            </ul>
+</li>
+          <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.4">
+            <p id="section-toc.1-1.4.1"><a href="#section-4" class="auto internal xref">4</a>.  <a href="#name-reference-architecture" class="internal xref">Reference Architecture</a></p>
+<ul class="compact toc ulBare ulEmpty">
+<li class="compact toc ulBare ulEmpty" id="section-toc.1-1.4.2.1">
+                <p id="section-toc.1-1.4.2.1.1"><a href="#section-4.1" class="auto internal xref">4.1</a>.  <a href="#name-roles" class="internal xref">Roles</a></p>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.4.2.2">
+                <p id="section-toc.1-1.4.2.2.1"><a href="#section-4.2" class="auto internal xref">4.2</a>.  <a href="#name-age-assertion-information-m" class="internal xref">Age Assertion Information Model</a></p>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.4.2.3">
+                <p id="section-toc.1-1.4.2.3.1"><a href="#section-4.3" class="auto internal xref">4.3</a>.  <a href="#name-flow-a-direct-check" class="internal xref">Flow A: Direct Check</a></p>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.4.2.4">
+                <p id="section-toc.1-1.4.2.4.1"><a href="#section-4.4" class="auto internal xref">4.4</a>.  <a href="#name-flow-b-user-held-reusable-a" class="internal xref">Flow B: User-Held Reusable Assertion</a></p>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.4.2.5">
+                <p id="section-toc.1-1.4.2.5.1"><a href="#section-4.5" class="auto internal xref">4.5</a>.  <a href="#name-flow-c-interoperability-net" class="internal xref">Flow C: Interoperability Network</a></p>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.4.2.6">
+                <p id="section-toc.1-1.4.2.6.1"><a href="#section-4.6" class="auto internal xref">4.6</a>.  <a href="#name-flow-d-upstream-age-signal" class="internal xref">Flow D: Upstream Age Signal</a></p>
+<ul class="compact toc ulBare ulEmpty">
+<li class="compact toc ulBare ulEmpty" id="section-toc.1-1.4.2.6.2.1">
+                    <p id="section-toc.1-1.4.2.6.2.1.1"><a href="#section-4.6.1" class="auto internal xref">4.6.1</a>.  <a href="#name-comparison-of-flows" class="internal xref">Comparison of Flows</a></p>
+</li>
+                </ul>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.4.2.7">
+                <p id="section-toc.1-1.4.2.7.1"><a href="#section-4.7" class="auto internal xref">4.7</a>.  <a href="#name-triple-blind-operation" class="internal xref">Triple-Blind Operation</a></p>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.4.2.8">
+                <p id="section-toc.1-1.4.2.8.1"><a href="#section-4.8" class="auto internal xref">4.8</a>.  <a href="#name-mapping-to-existing-specifi" class="internal xref">Mapping to Existing Specifications and Work in Progress</a></p>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.4.2.9">
+                <p id="section-toc.1-1.4.2.9.1"><a href="#section-4.9" class="auto internal xref">4.9</a>.  <a href="#name-trust-model" class="internal xref">Trust Model</a></p>
+</li>
+            </ul>
+</li>
+          <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.5">
+            <p id="section-toc.1-1.5.1"><a href="#section-5" class="auto internal xref">5</a>.  <a href="#name-layered-deployment" class="internal xref">Layered Deployment</a></p>
+<ul class="compact toc ulBare ulEmpty">
+<li class="compact toc ulBare ulEmpty" id="section-toc.1-1.5.2.1">
+                <p id="section-toc.1-1.5.2.1.1"><a href="#section-5.1" class="auto internal xref">5.1</a>.  <a href="#name-service-layer" class="internal xref">Service Layer</a></p>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.5.2.2">
+                <p id="section-toc.1-1.5.2.2.1"><a href="#section-5.2" class="auto internal xref">5.2</a>.  <a href="#name-operating-system-and-app-st" class="internal xref">Operating System and App Store Layer</a></p>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.5.2.3">
+                <p id="section-toc.1-1.5.2.3.1"><a href="#section-5.3" class="auto internal xref">5.3</a>.  <a href="#name-network-layer" class="internal xref">Network Layer</a></p>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.5.2.4">
+                <p id="section-toc.1-1.5.2.4.1"><a href="#section-5.4" class="auto internal xref">5.4</a>.  <a href="#name-geolocation" class="internal xref">Geolocation</a></p>
+</li>
+            </ul>
+</li>
+          <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.6">
+            <p id="section-toc.1-1.6.1"><a href="#section-6" class="auto internal xref">6</a>.  <a href="#name-determining-the-appropriate" class="internal xref">Determining the Appropriate Level</a></p>
+</li>
+          <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.7">
+            <p id="section-toc.1-1.7.1"><a href="#section-7" class="auto internal xref">7</a>.  <a href="#name-recommendations" class="internal xref">Recommendations</a></p>
+</li>
+          <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.8">
+            <p id="section-toc.1-1.8.1"><a href="#section-8" class="auto internal xref">8</a>.  <a href="#name-security-considerations" class="internal xref">Security Considerations</a></p>
+<ul class="compact toc ulBare ulEmpty">
+<li class="compact toc ulBare ulEmpty" id="section-toc.1-1.8.2.1">
+                <p id="section-toc.1-1.8.2.1.1"><a href="#section-8.1" class="auto internal xref">8.1</a>.  <a href="#name-failure-handling" class="internal xref">Failure Handling</a></p>
+</li>
+            </ul>
+</li>
+          <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.9">
+            <p id="section-toc.1-1.9.1"><a href="#section-9" class="auto internal xref">9</a>.  <a href="#name-privacy-considerations" class="internal xref">Privacy Considerations</a></p>
+</li>
+          <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.10">
+            <p id="section-toc.1-1.10.1"><a href="#section-10" class="auto internal xref">10</a>. <a href="#name-scope-and-policy-neutrality" class="internal xref">Scope and Policy Neutrality</a></p>
+</li>
+          <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.11">
+            <p id="section-toc.1-1.11.1"><a href="#section-11" class="auto internal xref">11</a>. <a href="#name-iana-considerations" class="internal xref">IANA Considerations</a></p>
+</li>
+          <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.12">
+            <p id="section-toc.1-1.12.1"><a href="#section-12" class="auto internal xref">12</a>. <a href="#name-informative-references" class="internal xref">Informative References</a></p>
+</li>
+          <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.13">
+            <p id="section-toc.1-1.13.1"><a href="#appendix-A" class="auto internal xref">Appendix A</a>.  <a href="#name-comparison-with-draft-knode" class="internal xref">Comparison with draft-knodel-age-arch</a></p>
+</li>
+          <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.14">
+            <p id="section-toc.1-1.14.1"><a href="#appendix-B" class="auto internal xref">Appendix B</a>.  <a href="#name-policy-considerations" class="internal xref">Policy Considerations</a></p>
+</li>
+          <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.15">
+            <p id="section-toc.1-1.15.1"><a href="#appendix-C" class="auto internal xref"></a><a href="#name-acknowledgments" class="internal xref">Acknowledgments</a></p>
+</li>
+          <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.16">
+            <p id="section-toc.1-1.16.1"><a href="#appendix-D" class="auto internal xref"></a><a href="#name-authors-address" class="internal xref">Author's Address</a></p>
+</li>
+        </ul>
+</nav>
+</section>
+</div>
+<div id="introduction">
+<section id="section-1">
+      <h2 id="name-introduction">
+<a href="#section-1" class="section-number selfRef">1. </a><a href="#name-introduction" class="section-name selfRef">Introduction</a>
+      </h2>
+<p id="section-1-1">Age assurance is increasingly a regulatory requirement. Services in the UK, the EU, Australia, many US states and elsewhere are now required to establish the age or age range of users before giving access to some content, features or goods. In most of these regimes the regulated service (the relying party) remains responsible for achieving the required outcome, even when it relies on a third party to perform the check.<a href="#section-1-1" class="pilcrow">¶</a></p>
+<p id="section-1-2">The IAB/W3C Workshop on Age-Based Restrictions on Content Access <span>[<a href="#RFC9998" class="cite xref">RFC9998</a>]</span> called for a shared vocabulary, a clear account of the roles involved and a neutral mapping of risks against architectures. RFC 9998 is an IAB workshop report: it records the views of participants and is not an IETF consensus document. It notes that participants pointed to ISO/IEC 27566-1 <span>[<a href="#ISO-27566-1" class="cite xref">ISO-27566-1</a>]</span> as a source of common terminology. This document takes up that call. It uses the framework established by ISO/IEC 27566-1 and the levels of assurance in IEEE 2089.1 <span>[<a href="#IEEE-2089.1" class="cite xref">IEEE-2089.1</a>]</span> as its conceptual foundation. Where this document groups, classifies or combines those concepts into architectural mechanisms, that synthesis is its own and should not be read as the normative structure of either standard, so that Internet protocols and architectures can be discussed in the same terms already used by regulators, certification bodies and the age assurance industry.<a href="#section-1-2" class="pilcrow">¶</a></p>
+<p id="section-1-3">The IAB has since published a statement on age-based restrictions and online safety <span>[<a href="#IAB-Statement-2026" class="cite xref">IAB-Statement-2026</a>]</span>. This document shares the requirements that statement sets out: disclose no more than a minimal, purpose-specific age signal; do not report users' activity; do not produce signals that can be linked across sites; do not reveal visited sites to the party that verified age; avoid centralised stores of sensitive data; and use open, interoperable interfaces. It also agrees that mandates should specify outcomes rather than technologies. It differs in emphasis on two points. First, it treats on-device processing as a property that any provider can offer, not only device and operating system vendors, so that device-level privacy need not concentrate control in a few platforms. Second, it argues that conformity assessment can and should establish confidence in claims about system-level properties such as privacy, unlinkability and resilience, which the IAB statement notes are often missed when vendors are certified against regulatory criteria.<a href="#section-1-3" class="pilcrow">¶</a></p>
+<p id="section-1-4">The goal is to describe how age assurance can be done well where it is required. That means a service can obtain assurance proportionate to the risk, users have a choice of accessible and privacy-preserving methods, and trustworthy results can be reused without creating either a universal identity system or a new means of tracking people across the Internet.<a href="#section-1-4" class="pilcrow">¶</a></p>
+<div id="related">
+<section id="section-1.1">
+        <h3 id="name-related-work">
+<a href="#section-1.1" class="section-number selfRef">1.1. </a><a href="#name-related-work" class="section-name selfRef">Related Work</a>
+        </h3>
+<p id="section-1.1-1">Several documents address the same problem. <span>[<a href="#RFC9998" class="cite xref">RFC9998</a>]</span> records the IAB/W3C workshop discussion, <span>[<a href="#IAB-Statement-2026" class="cite xref">IAB-Statement-2026</a>]</span> sets out the IAB's position, and <span>[<a href="#I-D.knodel-age-arch" class="cite xref">I-D.knodel-age-arch</a>]</span> analyses age gating methods along two dimensions, efficacy and privacy cost, organised by trust anchor. This document is offered as an alternative architecture to the last. It differs mainly in using terminology consistent with ISO/IEC 27566-1 throughout, in treating assurance as a measurable and multidimensional property of implemented systems, in distinguishing privacy properties enforced by design from those that rely on policy, and in focusing on how age assertions are communicated and trusted between independently governed systems. <a href="#comparison" class="auto internal xref">Appendix A</a> compares the two documents on specific points.<a href="#section-1.1-1" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="terminology">
+<section id="section-1.2">
+        <h3 id="name-terminology">
+<a href="#section-1.2" class="section-number selfRef">1.2. </a><a href="#name-terminology" class="section-name selfRef">Terminology</a>
+        </h3>
+<p id="section-1.2-1">Terms follow ISO/IEC 27566-1 and IEEE 2089.1 where those documents define them. The definitions below are paraphrased for an Internet audience; the referenced standards are authoritative. Some terms, including the forms of binding and triple-blind, are introduced by this document and are not defined in either standard.<a href="#section-1.2-1" class="pilcrow">¶</a></p>
+<span class="break"></span><dl class="dlParallel" id="section-1.2-2">
+          <dt id="section-1.2-2.1">Age assurance:</dt>
+          <dd style="margin-left: 1.5em" id="section-1.2-2.2">
+            <p id="section-1.2-2.2.1">The umbrella term for processes that establish, with a stated level of confidence, that a person is of a certain age, over or under an age threshold, or within an age range. It includes age verification, age estimation and age inference.<a href="#section-1.2-2.2.1" class="pilcrow">¶</a></p>
+</dd>
+          <dd class="break"></dd>
+<dt id="section-1.2-2.3">Age verification:</dt>
+          <dd style="margin-left: 1.5em" id="section-1.2-2.4">
+            <p id="section-1.2-2.4.1">Age assurance that relies on authoritative evidence of date of birth, such as a government-issued document, a digital credential or a trusted record, checked for authenticity and bound to the person presenting it.<a href="#section-1.2-2.4.1" class="pilcrow">¶</a></p>
+</dd>
+          <dd class="break"></dd>
+<dt id="section-1.2-2.5">Age estimation:</dt>
+          <dd style="margin-left: 1.5em" id="section-1.2-2.6">
+            <p id="section-1.2-2.6.1">Age assurance that derives an estimate of age from physical or behavioural characteristics of the person, such as facial or voice features, typically using machine learning models.<a href="#section-1.2-2.6.1" class="pilcrow">¶</a></p>
+</dd>
+          <dd class="break"></dd>
+<dt id="section-1.2-2.7">Age inference:</dt>
+          <dd style="margin-left: 1.5em" id="section-1.2-2.8">
+            <p id="section-1.2-2.8.1">Age assurance that draws a conclusion about age from other verified facts about the person, such as holding a payment card, a mortgage or a long-standing account, or from a combination of signals.<a href="#section-1.2-2.8.1" class="pilcrow">¶</a></p>
+</dd>
+          <dd class="break"></dd>
+<dt id="section-1.2-2.9">Self-declaration:</dt>
+          <dd style="margin-left: 1.5em" id="section-1.2-2.10">
+            <p id="section-1.2-2.10.1">A user's unverified statement of age. It provides no independent evidence and is not age assurance in the sense used here, though it may be a useful first step in a waterfall of methods.<a href="#section-1.2-2.10.1" class="pilcrow">¶</a></p>
+</dd>
+          <dd class="break"></dd>
+<dt id="section-1.2-2.11">Age threshold:</dt>
+          <dd style="margin-left: 1.5em" id="section-1.2-2.12">
+            <p id="section-1.2-2.12.1">The age that a relying party needs to know a user is above or below, for example 13, 16 or 18.<a href="#section-1.2-2.12.1" class="pilcrow">¶</a></p>
+</dd>
+          <dd class="break"></dd>
+<dt id="section-1.2-2.13">Over NN:</dt>
+          <dd style="margin-left: 1.5em" id="section-1.2-2.14">
+            <p id="section-1.2-2.14.1">At least NN years of age (for example, a person who has reached their 18th birthday is "over 18"). In protocols it should be expressed as the inclusive test age &gt;= NN, with the semantics defined explicitly.<a href="#section-1.2-2.14.1" class="pilcrow">¶</a></p>
+</dd>
+          <dd class="break"></dd>
+<dt id="section-1.2-2.15">Relying party:</dt>
+          <dd style="margin-left: 1.5em" id="section-1.2-2.16">
+            <p id="section-1.2-2.16.1">The service that uses the result of age assurance to decide what access or experience to provide. It is the "enforcer" in the roles of <span>[<a href="#RFC9998" class="cite xref">RFC9998</a>]</span>.<a href="#section-1.2-2.16.1" class="pilcrow">¶</a></p>
+</dd>
+          <dd class="break"></dd>
+<dt id="section-1.2-2.17">Age assurance provider:</dt>
+          <dd style="margin-left: 1.5em" id="section-1.2-2.18">
+            <p id="section-1.2-2.18.1">The party that performs age assurance and asserts the result. It may be an independent provider, the relying party itself, a credential issuer, a wallet, an operating system, app store or another intermediary. It is the "verifier" in <span>[<a href="#RFC9998" class="cite xref">RFC9998</a>]</span>.<a href="#section-1.2-2.18.1" class="pilcrow">¶</a></p>
+</dd>
+          <dd class="break"></dd>
+<dt id="section-1.2-2.19">Age assertion:</dt>
+          <dd style="margin-left: 1.5em" id="section-1.2-2.20">
+            <p id="section-1.2-2.20.1">The result of age assurance as conveyed to a relying party, for example "over 18", together with information about its level of assurance, provenance and validity.<a href="#section-1.2-2.20.1" class="pilcrow">¶</a></p>
+</dd>
+          <dd class="break"></dd>
+<dt id="section-1.2-2.21">Level of assurance:</dt>
+          <dd style="margin-left: 1.5em" id="section-1.2-2.22">
+            <p id="section-1.2-2.22.1">A standardised measure of the confidence that can be placed in an age assertion, reflecting accuracy, binding, resistance to attack and other factors. IEEE 2089.1 defines levels from Asserted through Basic, Standard and Enhanced to Strict. A level summarises confidence in the result; it does not describe every characteristic relevant to a particular relying party (<a href="#levels" class="auto internal xref">Section 3.2</a>).<a href="#section-1.2-2.22.1" class="pilcrow">¶</a></p>
+</dd>
+          <dd class="break"></dd>
+<dt id="section-1.2-2.23">Binding:</dt>
+          <dd style="margin-left: 1.5em" id="section-1.2-2.24">
+            <p id="section-1.2-2.24.1">Measures that link an age result to a person. This document treats three related but different problems separately: initial binding (at the original check, the evidence or characteristics assessed belong to the person being checked), holder binding (the assertion or credential is tied to its legitimate holder, typically through a key whose control the presenter can prove) and contemporaneous person binding (the person presenting at the point of reliance is that legitimate holder). Device possession and successful local authentication establish holder binding, not contemporaneous person binding. Only contemporaneous person binding directly addresses sharing and collusion.<a href="#section-1.2-2.24.1" class="pilcrow">¶</a></p>
+</dd>
+          <dd class="break"></dd>
+<dt id="section-1.2-2.25">False acceptance / false rejection:</dt>
+          <dd style="margin-left: 1.5em" id="section-1.2-2.26">
+            <p id="section-1.2-2.26.1">Accepting a person who is in fact below the threshold, or rejecting a person who is in fact above it.<a href="#section-1.2-2.26.1" class="pilcrow">¶</a></p>
+</dd>
+          <dd class="break"></dd>
+<dt id="section-1.2-2.27">Buffer (or challenge age):</dt>
+          <dd style="margin-left: 1.5em" id="section-1.2-2.28">
+            <p id="section-1.2-2.28.1">A margin above the legal threshold that an age estimate must exceed, set from measured performance so that the false acceptance rate meets the requirement.<a href="#section-1.2-2.28.1" class="pilcrow">¶</a></p>
+</dd>
+          <dd class="break"></dd>
+<dt id="section-1.2-2.29">Reusable age assurance:</dt>
+          <dd style="margin-left: 1.5em" id="section-1.2-2.30">
+            <p id="section-1.2-2.30.1">An age assertion established once and presented again to the same or another relying party, without repeating the original check.<a href="#section-1.2-2.30.1" class="pilcrow">¶</a></p>
+</dd>
+          <dd class="break"></dd>
+<dt id="section-1.2-2.31">Interoperability network:</dt>
+          <dd style="margin-left: 1.5em" id="section-1.2-2.32">
+            <p id="section-1.2-2.32.1">An arrangement under which relying parties accept age assertions from providers they do not contract with directly, under common rules on assurance and liability.<a href="#section-1.2-2.32.1" class="pilcrow">¶</a></p>
+</dd>
+          <dd class="break"></dd>
+<dt id="section-1.2-2.33">Upstream age signal:</dt>
+          <dd style="margin-left: 1.5em" id="section-1.2-2.34">
+            <p id="section-1.2-2.34.1">An age assertion or age range supplied by an operating system, app store, browser, network or device setting, rather than by the relying party's own check.<a href="#section-1.2-2.34.1" class="pilcrow">¶</a></p>
+</dd>
+          <dd class="break"></dd>
+<dt id="section-1.2-2.35">Triple-blind:</dt>
+          <dd style="margin-left: 1.5em" id="section-1.2-2.36">
+            <p id="section-1.2-2.36.1">A property of an age assurance flow in which the relying party receives no identifying information beyond the minimum age-related assertion necessary for its purpose, the provider or issuer cannot learn which relying parties the user visits, and any operating system or other platform technically involved cannot learn which relying parties the user visits either. Relying parties should also be unable to link presentations by the same user. <a href="#triple-blind" class="auto internal xref">Section 4.7</a> distinguishes where each property is cryptographically enforced and where it rests on operational or legal controls.<a href="#section-1.2-2.36.1" class="pilcrow">¶</a></p>
+</dd>
+          <dd class="break"></dd>
+<dt id="section-1.2-2.37">Age gating:</dt>
+          <dd style="margin-left: 1.5em" id="section-1.2-2.38">
+            <p id="section-1.2-2.38.1">Restricting access to content, features or goods on the basis of an age assertion.<a href="#section-1.2-2.38.1" class="pilcrow">¶</a></p>
+</dd>
+        <dd class="break"></dd>
+</dl>
+</section>
+</div>
+</section>
+</div>
+<div id="methods">
+<section id="section-2">
+      <h2 id="name-methods-of-age-assurance">
+<a href="#section-2" class="section-number selfRef">2. </a><a href="#name-methods-of-age-assurance" class="section-name selfRef">Methods of Age Assurance</a>
+      </h2>
+<p id="section-2-1">No single method works for every person or every use case. Each method below can deliver a range of levels of assurance depending on how it is implemented, and <a href="#measuring" class="auto internal xref">Section 3</a> describes how that level is measured. In deciding whether a result is reliable enough for a given context, the measured assurance characteristics of an implementation matter more than the category of method. Methods still differ in their privacy, inclusion and attack characteristics at the same level, and a relying party or user may legitimately weigh those separately.<a href="#section-2-1" class="pilcrow">¶</a></p>
+<div id="verification">
+<section id="section-2.1">
+        <h3 id="name-age-verification">
+<a href="#section-2.1" class="section-number selfRef">2.1. </a><a href="#name-age-verification" class="section-name selfRef">Age Verification</a>
+        </h3>
+<p id="section-2.1-1">Age verification checks authoritative evidence of date of birth. Sources include passports, identity cards and driving licences, whether physical or digital; government and other authoritative databases; and verifiable digital credentials such as ISO/IEC 18013-5 mobile driving licences <span>[<a href="#ISO-18013-5" class="cite xref">ISO-18013-5</a>]</span>, SD-JWT VC <span>[<a href="#I-D.ietf-oauth-sd-jwt-vc" class="cite xref">I-D.ietf-oauth-sd-jwt-vc</a>]</span> or W3C Verifiable Credentials issued by a state or other trusted issuer.<a href="#section-2.1-1" class="pilcrow">¶</a></p>
+<p id="section-2.1-2">To reach a high level of assurance, verification needs two things. First, the authenticity of the evidence must be established, for example by validating the issuer's signature on a credential or the security features of a document. Second, the evidence must be bound to the person presenting it, for example by a liveness-checked comparison with the document photo. Where a credential is held on a device, device-bound keys and local authentication show that the presenter controls the device, but not necessarily that they are the person originally verified: a parent could hand over an unlocked device or authorise a presentation on a child's behalf. Where sharing is a significant risk, higher levels of assurance may call for contemporaneous person binding, such as a fresh face match against the credential's portrait, or for other controls in proportion to the risk.<a href="#section-2.1-2" class="pilcrow">¶</a></p>
+<p id="section-2.1-3">Verification can also be performed entirely on the user's device. For example, an app can read the chip in an electronic passport or identity card over NFC, validate the issuing state's signature and compare the chip photo with a live selfie, so that personal data never leaves the user's hand and only the age result is shared.<a href="#section-2.1-3" class="pilcrow">¶</a></p>
+<p id="section-2.1-4">A common assumption is that age verification requires the relying party to receive a copy of an identity document. It does not. In well-designed systems the provider inspects the evidence and returns only the age assertion, and selective disclosure credentials can prove "over 18" without revealing a date of birth to the relying party. Systems that copy documents to relying parties reflect poor practice, not a property of the method.<a href="#section-2.1-4" class="pilcrow">¶</a></p>
+<p id="section-2.1-5">Verification is necessary where a specific date of birth must be established. It excludes people who lack accepted documents, so it should normally be offered alongside other methods rather than as the only route.<a href="#section-2.1-5" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="estimation">
+<section id="section-2.2">
+        <h3 id="name-age-estimation">
+<a href="#section-2.2" class="section-number selfRef">2.2. </a><a href="#name-age-estimation" class="section-name selfRef">Age Estimation</a>
+        </h3>
+<p id="section-2.2-1">Age estimation infers age from characteristics of the person, most commonly a facial image or short video, and sometimes voice or hand movement. It does not establish identity, and a well-designed implementation retains no image once the estimate is made.<a href="#section-2.2-1" class="pilcrow">¶</a></p>
+<p id="section-2.2-2">Estimation can likewise run entirely on the user's device, so the image is never transmitted and only the estimated age or threshold result is passed on. Discord, for example, offers facial age estimation processed entirely on the user's device and deleted immediately afterwards, while its document checks are sent to a provider <span>[<a href="#Discord-AA" class="cite xref">Discord-AA</a>]</span>. On-device processing removes the risk of a central breach of images, but the result must still be protected against tampering on the device, for example by attesting the integrity of the software that produced it. The example illustrates data minimisation only; it does not by itself demonstrate resistance to presentation, injection or other attacks.<a href="#section-2.2-2" class="pilcrow">¶</a></p>
+<p id="section-2.2-3">Older evaluations of facial age estimation, such as NIST IR 7995 from 2014, do not represent current technology. NIST IR 8525 <span>[<a href="#NIST-IR-8525" class="cite xref">NIST-IR-8525</a>]</span> and the ongoing NIST age estimation evaluation <span>[<a href="#NIST-FATE-AEV" class="cite xref">NIST-FATE-AEV</a>]</span> provide more recent measurements of algorithm performance, while the Australian Age Assurance Technology Trial <span>[<a href="#AU-AATT" class="cite xref">AU-AATT</a>]</span> provides additional evidence from independent evaluation. Performance varies between algorithms, age thresholds, demographic groups and capture environments, and laboratory results neither transfer automatically to a given capture setting nor establish resistance to attack. The appropriate architectural response is therefore to set measurable performance requirements, including false acceptance rates, and to require testing under conditions relevant to the intended deployment.<a href="#section-2.2-3" class="pilcrow">¶</a></p>
+<p id="section-2.2-4">The relevant question is not whether an estimate can be wrong. It is whether the error at the relevant threshold is measured and managed. Estimation achieves a required false acceptance rate by applying a buffer: a user may need to be estimated at 21 or 25 to pass an 18 check. Users near the threshold who are rejected can be offered another method. This is the "waterfall" approach described in <span><a href="https://rfc-editor.org/rfc/rfc9998#section-3.5" class="relref">Section 3.5</a> of [<a href="#RFC9998" class="cite xref">RFC9998</a>]</span>, in which lower-friction methods are tried first.<a href="#section-2.2-4" class="pilcrow">¶</a></p>
+<p id="section-2.2-5">Differential performance across demographic groups is real and must be measured, reported and minimised. It is a reason for independent testing and certification (<a href="#measuring" class="auto internal xref">Section 3</a>), not a reason to exclude the method. It is also a reason to ensure alternative methods are always available so users are not wrongly excluded.<a href="#section-2.2-5" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="inference">
+<section id="section-2.3">
+        <h3 id="name-age-inference">
+<a href="#section-2.3" class="section-number selfRef">2.3. </a><a href="#name-age-inference" class="section-name selfRef">Age Inference</a>
+        </h3>
+<p id="section-2.3-1">Age inference draws a conclusion about age from other facts that are themselves verified. Examples include a credit card check with the issuing bank, the existence of a mortgage or other adult financial product, mobile network operator records showing an account without adult content restrictions, the age of an email address and its history of use, or a professional licence with a minimum age, such as a commercial airline pilot's licence. Such facts are evidence of age only to the extent that eligibility rules guarantee it, the fact is authentic and the person presenting it is the person to whom it relates. Holding a credit card shows that an account exists, not that the person at the keyboard is its holder. Some forms therefore need more data points, or added binding, than others to reach a given level of assurance.<a href="#section-2.3-1" class="pilcrow">¶</a></p>
+<p id="section-2.3-2">Inference can be low-friction and privacy-protective when the facts are checked by the party that already holds them and only the result is returned. It can also be intrusive if it relies on profiling users without their knowledge. This document addresses inference performed as a deliberate, transparent age check, not behavioural profiling for other purposes.<a href="#section-2.3-2" class="pilcrow">¶</a></p>
+<p id="section-2.3-3">Social media platforms have deployed a form of age inference, sometimes called "heuristics", to detect underage users who already hold accounts. Three months after Australia's minimum age law took effect, the share of 10 to 15 year olds holding an account on an age-restricted platform had fallen only from around 52% to 42%, and the eSafety Commissioner concluded that platform implementation remained ineffective <span>[<a href="#eSafety-SMMA-3M" class="cite xref">eSafety-SMMA-3M</a>]</span>. These findings indicate that the age assurance measures deployed by platforms during the initial implementation period did not reliably prevent under-16s from retaining or creating accounts. They do not, by themselves, establish the accuracy of any particular inference algorithm.<a href="#section-2.3-3" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="parental">
+<section id="section-2.4">
+        <h3 id="name-parental-and-guardian-invol">
+<a href="#section-2.4" class="section-number selfRef">2.4. </a><a href="#name-parental-and-guardian-invol" class="section-name selfRef">Parental and Guardian Involvement</a>
+        </h3>
+<p id="section-2.4-1">Some legal requirements concern parental consent or parental controls rather than age restriction alone. These involve establishing that an adult is a parent or guardian of the child, and that the adult has consented or set a control. IEEE P2089.3 <span>[<a href="#IEEE-P2089.3" class="cite xref">IEEE-P2089.3</a>]</span> is developing a standard for online parental consent. Operating system and app store settings chosen by parents can be an effective way to implement such requirements, provided they meet the conditions in <a href="#layered" class="auto internal xref">Section 5</a>.<a href="#section-2.4-1" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="reusable">
+<section id="section-2.5">
+        <h3 id="name-reusable-age-assurance">
+<a href="#section-2.5" class="section-number selfRef">2.5. </a><a href="#name-reusable-age-assurance" class="section-name selfRef">Reusable Age Assurance</a>
+        </h3>
+<p id="section-2.5-1">Once established, an age assertion can be held by the user (for example in a wallet or as a device-bound token) or by a provider, and presented again later. Reuse reduces friction and the number of times personal data, if required at all, is processed. It also introduces new requirements: the assertion must remain bound to the right person, carry its level of assurance and validity and avoid acting as a persistent identifier across relying parties. <a href="#architecture" class="auto internal xref">Section 4</a> describes architectures that meet these requirements.<a href="#section-2.5-1" class="pilcrow">¶</a></p>
+</section>
+</div>
+</section>
+</div>
+<div id="measuring">
+<section id="section-3">
+      <h2 id="name-measuring-and-assuring-age-">
+<a href="#section-3" class="section-number selfRef">3. </a><a href="#name-measuring-and-assuring-age-" class="section-name selfRef">Measuring and Assuring Age Assurance</a>
+      </h2>
+<p id="section-3-1">The strength of an age check is a measurable property of an implementation, not a fixed property of a method. Two facial estimation systems, or two document checks, can differ widely in performance. A relying party therefore needs to understand the assurance characteristics of the result it receives that are relevant to its context, which a level of assurance summarises but does not replace, and needs confidence that those characteristics have been independently established.<a href="#section-3-1" class="pilcrow">¶</a></p>
+<div id="components">
+<section id="section-3.1">
+        <h3 id="name-components-of-assurance">
+<a href="#section-3.1" class="section-number selfRef">3.1. </a><a href="#name-components-of-assurance" class="section-name selfRef">Components of Assurance</a>
+        </h3>
+<p id="section-3.1-1">Drawing on ISO/IEC 27566-1 and IEEE 2089.1, this document groups the factors that determine confidence in an age assertion as follows. The grouping is this document's own; the normative requirements of each standard are set out in its published text.<a href="#section-3.1-1" class="pilcrow">¶</a></p>
+<ul class="normal">
+<li class="normal" id="section-3.1-2.1">
+            <p id="section-3.1-2.1.1"><strong>Accuracy.</strong> For verification, the rate at which forged, altered or invalid evidence is accepted. For estimation, the error in the estimate and its distribution, and in particular the false acceptance and false rejection rates around the relevant threshold. For inference, the strength of the link between the facts checked and age.<a href="#section-3.1-2.1.1" class="pilcrow">¶</a></p>
+</li>
+          <li class="normal" id="section-3.1-2.2">
+            <p id="section-3.1-2.2.1"><strong>Binding.</strong> How strongly the result is tied to a person, which involves three distinct questions (<a href="#terminology" class="auto internal xref">Section 1.2</a>): whether the evidence assessed at the initial check belonged to the person checked; whether a reused assertion or credential is tied to its legitimate holder; and whether that holder is the person actually presenting it at the point of reliance. Live estimation addresses the first and third together, because it assesses the person in front of the camera at that moment. For reused results and evidence from another source, device possession and local authentication establish control of a credential, not that the original subject is the present user: a younger sibling who knows the PIN, or is handed an unlocked device, will pass them. Where sharing and collusion are significant risks, contemporaneous person binding, such as a fresh liveness-checked face match, is one control. Others include short validity periods, limits on reuse and risk signals, and the appropriate combination depends on the use case.<a href="#section-3.1-2.2.1" class="pilcrow">¶</a></p>
+</li>
+          <li class="normal" id="section-3.1-2.3">
+            <p id="section-3.1-2.3.1"><strong>Resistance to attack.</strong> Detection of presentation attacks (masks, photos or replayed video shown to the camera), evaluated for example to ISO/IEC 30107-3 <span>[<a href="#ISO-30107-3" class="cite xref">ISO-30107-3</a>]</span>. Separately, detection of injection attacks (synthetic or manipulated media inserted into the capture pipeline, bypassing the camera) and assurance of capture integrity, for which CEN/TS 18099 <span>[<a href="#CEN-TS-18099" class="cite xref">CEN-TS-18099</a>]</span> provides an evaluation method. And controls against collusion and credential sharing.<a href="#section-3.1-2.3.1" class="pilcrow">¶</a></p>
+</li>
+          <li class="normal" id="section-3.1-2.4">
+            <p id="section-3.1-2.4.1"><strong>Bias.</strong> Measured differences in performance across groups defined by age, sex, skin tone or other protected characteristics, and steps to minimise them.<a href="#section-3.1-2.4.1" class="pilcrow">¶</a></p>
+</li>
+          <li class="normal" id="section-3.1-2.5">
+            <p id="section-3.1-2.5.1"><strong>Privacy and security.</strong> Data minimisation, retention, purpose limitation and the security of any personal data processed.<a href="#section-3.1-2.5.1" class="pilcrow">¶</a></p>
+</li>
+        </ul>
+</section>
+</div>
+<div id="levels">
+<section id="section-3.2">
+        <h3 id="name-levels-of-assurance">
+<a href="#section-3.2" class="section-number selfRef">3.2. </a><a href="#name-levels-of-assurance" class="section-name selfRef">Levels of Assurance</a>
+        </h3>
+<p id="section-3.2-1">Standard levels of assurance let a regulator or relying party specify the confidence it needs in an age result without prescribing technology. IEEE 2089.1 defines five levels: Asserted, Basic, Standard, Enhanced and Strict, with requirements set out in that standard. A level of assurance describes confidence that the age result is correct and belongs to the person presenting it. It does not capture everything a relying party or user may care about. Privacy properties and inclusion are separate dimensions, and should be expressed and assessed separately rather than folded into a single level. Assurance is therefore multidimensional, and a nominal level of assurance cannot substitute for understanding the characteristics relevant to a particular relying-party context: two results at the same level may differ, for example, in how they are bound to the person presenting them or in what they reveal. Certification status is not one of these dimensions; it is evidence about whether claimed characteristics have been established (<a href="#certification" class="auto internal xref">Section 3.3</a>).<a href="#section-3.2-1" class="pilcrow">¶</a></p>
+<p id="section-3.2-2">This outcome-based approach is converging internationally. Ofcom's "highly effective age assurance" criteria in the UK (technically accurate, robust, reliable and fair) <span>[<a href="#Ofcom-HEAA" class="cite xref">Ofcom-HEAA</a>]</span> and the European Commission's guidelines under Article 28 of the Digital Services Act <span>[<a href="#EC-Art28" class="cite xref">EC-Art28</a>]</span> both set outcomes rather than mandate methods (although the Article 28 guidelines prefer verification where access is restricted to adults by law).<a href="#section-3.2-2" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="certification">
+<section id="section-3.3">
+        <h3 id="name-independent-testing-and-cer">
+<a href="#section-3.3" class="section-number selfRef">3.3. </a><a href="#name-independent-testing-and-cer" class="section-name selfRef">Independent Testing and Certification</a>
+        </h3>
+<p id="section-3.3-1">Claims about accuracy, privacy and effectiveness should rest on independently verifiable evidence and comparable testing. Conformity assessment, including certification, is a mechanism for establishing confidence in claims about a system's characteristics; it is not itself one of those characteristics. Certification provides independently established objective evidence that specified requirements have been fulfilled, but it does not make an implementation effective, and its value depends on what those requirements cover. Three forms of evidence are available:<a href="#section-3.3-1" class="pilcrow">¶</a></p>
+<ol start="1" type="1" class="normal type-1" id="section-3.3-2">
+<li id="section-3.3-2.1">
+            <p id="section-3.3-2.1.1"><strong>Laboratory evaluation</strong> of algorithms against common datasets, such as the NIST age estimation evaluation <span>[<a href="#NIST-FATE-AEV" class="cite xref">NIST-FATE-AEV</a>]</span>. This measures algorithm performance, not a deployed service.<a href="#section-3.3-2.1.1" class="pilcrow">¶</a></p>
+</li>
+          <li id="section-3.3-2.2">
+            <p id="section-3.3-2.2.1"><strong>Conformity assessment and certification</strong> of a whole service against the requirements of a certification scheme, such as one based on IEEE 2089.1 or ISO/IEC 27566-1, by a certification body that is itself accredited by a national accreditation body to operate that scheme. A framework standard does not on its own define everything a scheme must test.<a href="#section-3.3-2.2.1" class="pilcrow">¶</a></p>
+</li>
+          <li id="section-3.3-2.3">
+            <p id="section-3.3-2.3.1"><strong>Test purchasing</strong>, online and face to face, which shows whether technology and processes work together in real deployments, including against attempts at circumvention.<a href="#section-3.3-2.3.1" class="pilcrow">¶</a></p>
+</li>
+        </ol>
+<p id="section-3.3-3">The Australian Government's Age Assurance Technology Trial <span>[<a href="#AU-AATT" class="cite xref">AU-AATT</a>]</span>, conducted independently by the Age Check Certification Scheme, combined laboratory evaluation and test purchasing with a review of each provider's practice statement, in the same way that conformity assessment bodies assess solutions.<a href="#section-3.3-3" class="pilcrow">¶</a></p>
+<p id="section-3.3-4">Where a relying party performs age assurance in-house or relies on an upstream signal, the same kinds of evidence are needed to establish confidence in its claimed level of assurance and other characteristics. Assessment should also cover system-level properties such as privacy, unlinkability and resilience, a gap identified in <span>[<a href="#IAB-Statement-2026" class="cite xref">IAB-Statement-2026</a>]</span>. How regulators might recognise certification is a policy question, discussed in <a href="#policy" class="auto internal xref">Appendix B</a>.<a href="#section-3.3-4" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="inclusion">
+<section id="section-3.4">
+        <h3 id="name-inclusion">
+<a href="#section-3.4" class="section-number selfRef">3.4. </a><a href="#name-inclusion" class="section-name selfRef">Inclusion</a>
+        </h3>
+<p id="section-3.4-1">Because every method fails for some people, inclusion is achieved by offering alternatives at the required level of assurance, not by lowering the level. A person without a passport, credit history, smartphone or suitable biometric characteristics should be able to use another method. Professional vouching, in which a trusted professional attests to the age of someone without documentary evidence, is one possible route, subject to independently established requirements for its reliability and binding. No single method should therefore be the sole route to compliance.<a href="#section-3.4-1" class="pilcrow">¶</a></p>
+</section>
+</div>
+</section>
+</div>
+<div id="architecture">
+<section id="section-4">
+      <h2 id="name-reference-architecture">
+<a href="#section-4" class="section-number selfRef">4. </a><a href="#name-reference-architecture" class="section-name selfRef">Reference Architecture</a>
+      </h2>
+<p id="section-4-1">An age assertion should carry enough information for a relying party to trust it, and nothing more. This section describes the roles, the content of an assertion and four reference flows. It does not define a new protocol: each flow can be built from existing work.<a href="#section-4-1" class="pilcrow">¶</a></p>
+<div id="roles">
+<section id="section-4.1">
+        <h3 id="name-roles">
+<a href="#section-4.1" class="section-number selfRef">4.1. </a><a href="#name-roles" class="section-name selfRef">Roles</a>
+        </h3>
+<p id="section-4.1-1">This document uses the roles from <span><a href="https://rfc-editor.org/rfc/rfc9998#section-3.2" class="relref">Section 3.2</a> of [<a href="#RFC9998" class="cite xref">RFC9998</a>]</span> and describes them in terms consistent with ISO/IEC 27566-1:<a href="#section-4.1-1" class="pilcrow">¶</a></p>
+<ul class="normal">
+<li class="normal" id="section-4.1-2.1">
+            <p id="section-4.1-2.1.1"><strong>User</strong>: the person whose age is assured.<a href="#section-4.1-2.1.1" class="pilcrow">¶</a></p>
+</li>
+          <li class="normal" id="section-4.1-2.2">
+            <p id="section-4.1-2.2.1"><strong>Age assurance provider</strong>: performs the check and issues the assertion.<a href="#section-4.1-2.2.1" class="pilcrow">¶</a></p>
+</li>
+          <li class="normal" id="section-4.1-2.3">
+            <p id="section-4.1-2.3.1"><strong>Credential issuer</strong>: a party, which may be a state, that issues evidence of age used by a provider or held by the user.<a href="#section-4.1-2.3.1" class="pilcrow">¶</a></p>
+</li>
+          <li class="normal" id="section-4.1-2.4">
+            <p id="section-4.1-2.4.1"><strong>Holder agent</strong>: software that holds a reusable assertion for the user, such as a wallet, browser or operating system component.<a href="#section-4.1-2.4.1" class="pilcrow">¶</a></p>
+</li>
+          <li class="normal" id="section-4.1-2.5">
+            <p id="section-4.1-2.5.1"><strong>Relying party</strong>: uses the assertion to decide access, and remains responsible for compliance.<a href="#section-4.1-2.5.1" class="pilcrow">¶</a></p>
+</li>
+          <li class="normal" id="section-4.1-2.6">
+            <p id="section-4.1-2.6.1"><strong>Policy selector and rater</strong>: decide which threshold applies to which content in which jurisdiction. These are usually the relying party, guided by law.<a href="#section-4.1-2.6.1" class="pilcrow">¶</a></p>
+</li>
+        </ul>
+<span id="name-reference-flows-a-to-d"></span><div id="fig-flows">
+<figure id="figure-1">
+          <div class="alignLeft art-ascii-art art-text artwork" id="section-4.1-3.1">
+<pre>
+Source of assertion         Relying party      Privacy safeguard
+
++--------------------+    +---------------+
+| A: direct check    |---&gt;|               |  Provider sees service;
+| provider, redirect |    | receives only:|  deletes data after check
++--------------------+    |               |
++--------------------+    | - age         |
+| B: user-held       |---&gt;|   threshold   |  Issuer not involved;
+| wallet or device-  |    |   result      |  single-use or ZKP proofs
+| bound credential   |    | - level of    |
++--------------------+    |   assurance   |
++--------------------+    | - accountable |
+| C: interoperable   |---&gt;|   provider    |  Pairwise or blinded
+| prior check by     |    | - validity and|  tokens; no network-wide
+| another provider   |    |   binding     |  identifier
++--------------------+    |               |
++--------------------+    |               |
+| D: upstream signal |---&gt;|               |  Platform ideally cannot
+| OS, app store,     |    |               |  see service, else must
+| browser, network   |    |               |  not log
++--------------------+    +---------------+
+</pre>
+</div>
+<figcaption><a href="#figure-1" class="selfRef">Figure 1</a>:
+<a href="#name-reference-flows-a-to-d" class="selfRef">Reference Flows A to D</a>
+          </figcaption></figure>
+</div>
+<p id="section-4.1-4">Whichever route an assertion takes, the relying party should receive the same minimised set of information, and each route has its own safeguard against tracking.<a href="#section-4.1-4" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="info-model">
+<section id="section-4.2">
+        <h3 id="name-age-assertion-information-m">
+<a href="#section-4.2" class="section-number selfRef">4.2. </a><a href="#name-age-assertion-information-m" class="section-name selfRef">Age Assertion Information Model</a>
+        </h3>
+<p id="section-4.2-1">A binary result is not enough for a relying party that remains responsible for the outcome. This section proposes a conceptual information model for an age assertion. The model describes what must be established, not what must be transmitted: some elements travel in each presentation, while others are established once through a trust framework or independently verifiable scheme rules.<a href="#section-4.2-1" class="pilcrow">¶</a></p>
+<span id="name-age-assertion-information-mo"></span><div id="tab-info-model">
+<table class="center" id="table-1">
+          <caption>
+<a href="#table-1" class="selfRef">Table 1</a>:
+<a href="#name-age-assertion-information-mo" class="selfRef">Age Assertion Information Model</a>
+          </caption>
+<thead>
+            <tr>
+              <th class="text-left" rowspan="1" colspan="1">Element</th>
+              <th class="text-left" rowspan="1" colspan="1">What it establishes</th>
+              <th class="text-left" rowspan="1" colspan="1">Typically conveyed</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="text-left" rowspan="1" colspan="1">Age result</td>
+              <td class="text-left" rowspan="1" colspan="1">The threshold met (age &gt;= NN) or the range established</td>
+              <td class="text-left" rowspan="1" colspan="1">In each presentation</td>
+            </tr>
+            <tr>
+              <td class="text-left" rowspan="1" colspan="1">Assurance</td>
+              <td class="text-left" rowspan="1" colspan="1">The level of assurance and the scheme under which it was assessed</td>
+              <td class="text-left" rowspan="1" colspan="1">Level and scheme identifier in the presentation; detail in scheme rules</td>
+            </tr>
+            <tr>
+              <td class="text-left" rowspan="1" colspan="1">Provenance</td>
+              <td class="text-left" rowspan="1" colspan="1">The issuer or provider and the trust framework it operates under</td>
+              <td class="text-left" rowspan="1" colspan="1">Trust framework or trust list; the presentation carries only what is needed to find the verification key, as coarse as possible</td>
+            </tr>
+            <tr>
+              <td class="text-left" rowspan="1" colspan="1">Binding</td>
+              <td class="text-left" rowspan="1" colspan="1">Which forms of binding were established (initial, holder and contemporaneous person binding), and when</td>
+              <td class="text-left" rowspan="1" colspan="1">Proof of possession in the presentation; binding policy in scheme rules</td>
+            </tr>
+            <tr>
+              <td class="text-left" rowspan="1" colspan="1">Validity</td>
+              <td class="text-left" rowspan="1" colspan="1">Expiry, revocation and status semantics</td>
+              <td class="text-left" rowspan="1" colspan="1">Validity window in the presentation; status mechanism defined by the scheme</td>
+            </tr>
+            <tr>
+              <td class="text-left" rowspan="1" colspan="1">Audience and replay</td>
+              <td class="text-left" rowspan="1" colspan="1">The intended relying party and protection against replay</td>
+              <td class="text-left" rowspan="1" colspan="1">Nonce and audience in the presentation</td>
+            </tr>
+            <tr>
+              <td class="text-left" rowspan="1" colspan="1">Privacy properties</td>
+              <td class="text-left" rowspan="1" colspan="1">Whether presentations are unlinkable, and what the issuer and platform can observe</td>
+              <td class="text-left" rowspan="1" colspan="1">Scheme rules, so relying parties and users can rely on them without per-transaction disclosure</td>
+            </tr>
+            <tr>
+              <td class="text-left" rowspan="1" colspan="1">Accountability</td>
+              <td class="text-left" rowspan="1" colspan="1">Who is responsible for the result</td>
+              <td class="text-left" rowspan="1" colspan="1">Scheme rules and audit records held by the provider or scheme operator, not sent to relying parties</td>
+            </tr>
+          </tbody>
+        </table>
+</div>
+<p id="section-4.2-3">Not everything needed for accountability must go to every relying party. Three sets of information should be distinguished: what the relying party needs to evaluate the assurance; what an auditor or scheme operator needs to establish accountability after the event; and what must be transmitted in every presentation. A rare issuer, a precise timestamp or other uncommon metadata can shrink the anonymity set and allow correlation even without a user identifier. Presentations should therefore carry coarse values where the relying party does not need more, for example a scheme or trust-list identifier rather than an individual provider, and a validity window rather than the time of the check.<a href="#section-4.2-3" class="pilcrow">¶</a></p>
+<p id="section-4.2-4">An assertion should not carry the user's identity, date of birth, the evidence examined or any identifier that is stable across relying parties. Proposed work on ISO/IEC 27566-4 <span>[<a href="#ISO-27566-4" class="cite xref">ISO-27566-4</a>]</span> on interoperability and semantics for age assurance, not yet a published standard, would address how independently governed ecosystems can express and understand these characteristics.<a href="#section-4.2-4" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="flow-a">
+<section id="section-4.3">
+        <h3 id="name-flow-a-direct-check">
+<a href="#section-4.3" class="section-number selfRef">4.3. </a><a href="#name-flow-a-direct-check" class="section-name selfRef">Flow A: Direct Check</a>
+        </h3>
+<p id="section-4.3-1">The relying party sends the user to a provider, by redirect or embedded component. The provider performs a check and returns a signed assertion to the relying party. This is the deployment model shown in Figure 1 of <span>[<a href="#RFC9998" class="cite xref">RFC9998</a>]</span> and is widely deployed today. It can be made privacy-preserving if the provider deletes personal data once the check is complete and returns only the assertion. Its weakness is that the provider learns which relying party the user is visiting, and the user may need to repeat the check at each service.<a href="#section-4.3-1" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="flow-b">
+<section id="section-4.4">
+        <h3 id="name-flow-b-user-held-reusable-a">
+<a href="#section-4.4" class="section-number selfRef">4.4. </a><a href="#name-flow-b-user-held-reusable-a" class="section-name selfRef">Flow B: User-Held Reusable Assertion</a>
+        </h3>
+<p id="section-4.4-1">A provider or issuer issues an assertion to a holder agent controlled by the user, bound to a key on the user's device. When a relying party requests proof of age, the holder agent presents the assertion, disclosing only the threshold result. Presentation can use OpenID for Verifiable Presentations <span>[<a href="#OpenID4VP" class="cite xref">OpenID4VP</a>]</span>, mediated in the browser by the W3C Digital Credentials API <span>[<a href="#W3C-DC-API" class="cite xref">W3C-DC-API</a>]</span>, with credentials in ISO mdoc <span>[<a href="#ISO-18013-5" class="cite xref">ISO-18013-5</a>]</span> or SD-JWT VC <span>[<a href="#I-D.ietf-oauth-sd-jwt-vc" class="cite xref">I-D.ietf-oauth-sd-jwt-vc</a>]</span> format. These formats and protocols are building blocks. Selective disclosure and unlinkability are different properties: a credential that reveals only "over 18" can still carry an issuer signature, credential identifier, holder key or other metadata that lets relying parties correlate presentations. Binding to a device key establishes holder binding; it does not establish who is using the device at the point of presentation (<a href="#terminology" class="auto internal xref">Section 1.2</a>).<a href="#section-4.4-1" class="pilcrow">¶</a></p>
+<p id="section-4.4-2">Because the issuer is not involved at presentation, it does not learn which relying parties the user visits, provided it does not also operate the wallet or receive status or revocation checks that reveal them. To prevent relying parties from correlating presentations, issuers can issue batches of single-use credentials (as in the EU age verification app blueprint <span>[<a href="#EU-AV-Blueprint" class="cite xref">EU-AV-Blueprint</a>]</span>) or use zero-knowledge proofs, so that no signature, key or identifier repeats across presentations. The resulting privacy depends on how issuance, metadata and verifier behaviour are constrained, not on the credential format alone.<a href="#section-4.4-2" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="flow-c">
+<section id="section-4.5">
+        <h3 id="name-flow-c-interoperability-net">
+<a href="#section-4.5" class="section-number selfRef">4.5. </a><a href="#name-flow-c-interoperability-net" class="section-name selfRef">Flow C: Interoperability Network</a>
+        </h3>
+<p id="section-4.5-1">A relying party asks its own contracted provider for an assertion. If the user has already been checked by another provider in the same network, the relying party's provider obtains a fresh assertion based on that earlier check rather than checking the user again. Networks need rules on equivalent standards, liability and the communication of levels of assurance, and must avoid a persistent network-wide identifier.<a href="#section-4.5-1" class="pilcrow">¶</a></p>
+<p id="section-4.5-2">One design that meets this aim routes reuse through the user's browser or holder agent rather than between providers' servers. The relying party's provider asks the user agent for a reusable token. The user agent obtains from the originating provider a fresh, blindly signed, single-use token stating the age result and level of assurance, so the originating provider does not learn which relying party or which provider asked for it. The relying party's provider verifies the token against the originating provider's published key, obtained from the scheme's trust list. Because each token is used once, neither provider can link presentations. Variants in which providers exchange assertions directly between servers are simpler to deploy, but expose the requesting party to the originating provider and depend more on scheme rules.<a href="#section-4.5-2" class="pilcrow">¶</a></p>
+<p id="section-4.5-3">The euCONSENT project <span>[<a href="#euCONSENT" class="cite xref">euCONSENT</a>]</span> piloted interoperable age assurance and parental consent between multiple providers across EU member states. It demonstrated that providers can accept each other's checks; it did not by itself demonstrate every privacy property described here.<a href="#section-4.5-3" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="flow-d">
+<section id="section-4.6">
+        <h3 id="name-flow-d-upstream-age-signal">
+<a href="#section-4.6" class="section-number selfRef">4.6. </a><a href="#name-flow-d-upstream-age-signal" class="section-name selfRef">Flow D: Upstream Age Signal</a>
+        </h3>
+<p id="section-4.6-1">An operating system, app store, browser or network supplies an age range, usually established at account creation or set by a parent or guardian. The relying party queries it through a platform interface. This can be low friction and useful for parental controls. Where a relying party relies on such a signal to meet a legal requirement, the signal must meet the same conditions as any other assertion: a stated level of assurance, independent assessment and a clearly accountable party (<a href="#layered" class="auto internal xref">Section 5</a>).<a href="#section-4.6-1" class="pilcrow">¶</a></p>
+<p id="section-4.6-2">A platform usually establishes the age of the account holder, not of the person using the device at a given moment. Shared devices and family accounts make that distinction material. A relying party should treat such a signal accordingly unless the platform binds it to the current user, for example through robust multi-user support.<a href="#section-4.6-2" class="pilcrow">¶</a></p>
+<div id="flow-comparison">
+<section id="section-4.6.1">
+          <h4 id="name-comparison-of-flows">
+<a href="#section-4.6.1" class="section-number selfRef">4.6.1. </a><a href="#name-comparison-of-flows" class="section-name selfRef">Comparison of Flows</a>
+          </h4>
+<span id="name-comparison-of-flows-2"></span><div id="tab-flows">
+<table class="center" id="table-2">
+            <caption>
+<a href="#table-2" class="selfRef">Table 2</a>:
+<a href="#name-comparison-of-flows-2" class="selfRef">Comparison of Flows</a>
+            </caption>
+<thead>
+              <tr>
+                <th class="text-left" rowspan="1" colspan="1">Flow</th>
+                <th class="text-left" rowspan="1" colspan="1">What each party learns</th>
+                <th class="text-left" rowspan="1" colspan="1">Cryptographic mechanisms available</th>
+                <th class="text-left" rowspan="1" colspan="1">What rests on organisational trust</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td class="text-left" rowspan="1" colspan="1">A: direct check</td>
+                <td class="text-left" rowspan="1" colspan="1">Provider: the evidence and which relying party asked. Relying party: the result</td>
+                <td class="text-left" rowspan="1" colspan="1">Signed assertion; audience-bound nonce</td>
+                <td class="text-left" rowspan="1" colspan="1">Provider deletes evidence and does not profile requests</td>
+              </tr>
+              <tr>
+                <td class="text-left" rowspan="1" colspan="1">B: user-held assertion</td>
+                <td class="text-left" rowspan="1" colspan="1">Issuer: the evidence, at issuance only. Relying party: the result and presentation metadata. Platform: the request, if it mediates</td>
+                <td class="text-left" rowspan="1" colspan="1">Selective disclosure; single-use credentials or zero-knowledge proofs; device-bound keys</td>
+                <td class="text-left" rowspan="1" colspan="1">Wallet and platform do not log presentations; issuer does not observe status checks</td>
+              </tr>
+              <tr>
+                <td class="text-left" rowspan="1" colspan="1">C: interoperable network</td>
+                <td class="text-left" rowspan="1" colspan="1">Originating provider: that a reuse occurred. Relying party's provider and relying party: the result</td>
+                <td class="text-left" rowspan="1" colspan="1">Blind or pairwise single-use tokens; signed assertions; trust lists</td>
+                <td class="text-left" rowspan="1" colspan="1">Scheme rules on liability, equivalence and logging</td>
+              </tr>
+              <tr>
+                <td class="text-left" rowspan="1" colspan="1">D: upstream signal</td>
+                <td class="text-left" rowspan="1" colspan="1">Platform: which relying party requested a signal, unless the design prevents it. Relying party: the age range</td>
+                <td class="text-left" rowspan="1" colspan="1">Platform-signed signal; on-device evaluation</td>
+                <td class="text-left" rowspan="1" colspan="1">Platform does not log requests; signal reflects the current user</td>
+              </tr>
+            </tbody>
+          </table>
+</div>
+</section>
+</div>
+</section>
+</div>
+<div id="triple-blind">
+<section id="section-4.7">
+        <h3 id="name-triple-blind-operation">
+<a href="#section-4.7" class="section-number selfRef">4.7. </a><a href="#name-triple-blind-operation" class="section-name selfRef">Triple-Blind Operation</a>
+        </h3>
+<p id="section-4.7-1">A triple-blind flow aims at three properties: the relying party receives no identifying information beyond the minimum age-related assertion necessary for its purpose; the provider or issuer cannot learn which relying parties the user visits; and the operating system, browser, app store or wallet provider cannot learn this either. Relying parties should also be unable to link presentations by the same user. Each property can be achieved in two quite different ways: by cryptographic or architectural design, so that a party is technically unable to learn the information, or by operational and legal controls, so that a party that can observe it commits not to retain or use it. The second is weaker and should be described as such.<a href="#section-4.7-1" class="pilcrow">¶</a></p>
+<span id="name-triple-blind-properties"></span><div id="tab-triple-blind">
+<table class="center" id="table-3">
+          <caption>
+<a href="#table-3" class="selfRef">Table 3</a>:
+<a href="#name-triple-blind-properties" class="selfRef">Triple-Blind Properties</a>
+          </caption>
+<thead>
+            <tr>
+              <th class="text-left" rowspan="1" colspan="1">Protection against</th>
+              <th class="text-left" rowspan="1" colspan="1">What it should not learn</th>
+              <th class="text-left" rowspan="1" colspan="1">Enforceable by design through</th>
+              <th class="text-left" rowspan="1" colspan="1">Otherwise reliant on</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="text-left" rowspan="1" colspan="1">Relying party</td>
+              <td class="text-left" rowspan="1" colspan="1">Identity, date of birth, evidence; links between visits</td>
+              <td class="text-left" rowspan="1" colspan="1">Selective disclosure; single-use credentials or zero-knowledge proofs; minimal metadata</td>
+              <td class="text-left" rowspan="1" colspan="1">Verifier policy and data protection law</td>
+            </tr>
+            <tr>
+              <td class="text-left" rowspan="1" colspan="1">Provider or issuer</td>
+              <td class="text-left" rowspan="1" colspan="1">Which relying parties the user visits</td>
+              <td class="text-left" rowspan="1" colspan="1">Issuer absent at presentation (Flow B); blind issuance; privacy-preserving status checks</td>
+              <td class="text-left" rowspan="1" colspan="1">Deletion and audit commitments (Flow A)</td>
+            </tr>
+            <tr>
+              <td class="text-left" rowspan="1" colspan="1">Wallet provider</td>
+              <td class="text-left" rowspan="1" colspan="1">Which relying parties the user visits</td>
+              <td class="text-left" rowspan="1" colspan="1">Wallet software that keeps presentation records on the device only</td>
+              <td class="text-left" rowspan="1" colspan="1">Operator commitments, with independent assessment of compliance</td>
+            </tr>
+            <tr>
+              <td class="text-left" rowspan="1" colspan="1">Platform (OS, browser, app store)</td>
+              <td class="text-left" rowspan="1" colspan="1">Which relying parties request age</td>
+              <td class="text-left" rowspan="1" colspan="1">Presentation paths that do not pass through platform mediation</td>
+              <td class="text-left" rowspan="1" colspan="1">Platform commitments not to log or use requests</td>
+            </tr>
+          </tbody>
+        </table>
+</div>
+<p id="section-4.7-3">The last row matters. Where presentation is mediated by the browser or operating system, for example through the W3C Digital Credentials API, the user agent can inspect the request and the requesting origin by design. A platform's commitment not to retain that information is not equivalent to being unable to observe it.<a href="#section-4.7-3" class="pilcrow">¶</a></p>
+<p id="section-4.7-4">Browsers and operating systems necessarily process the addresses of sites that users visit, so it is not realistic to require that they never know the destination. The triple-blind requirement concerns something narrower: that the platform cannot observe, or does not record, that an age assurance transaction took place with a given relying party, or its result. A platform that knows a user visited a site, but not that the site asked for proof of age or what was proved, meets the requirement. An age assertion may itself be personal data under data protection law, particularly when combined with other information the relying party holds, which is why the requirement is framed as minimisation rather than as the absence of personal data.<a href="#section-4.7-4" class="pilcrow">¶</a></p>
+<p id="section-4.7-5">Blind-signature token schemes such as Privacy Pass <span>[<a href="#RFC9576" class="cite xref">RFC9576</a>]</span> <span>[<a href="#RFC9578" class="cite xref">RFC9578</a>]</span> can be one component of an unlinkable presentation layer, by separating the party that attests age from the party that redeems tokens. They do not themselves establish age, a level of assurance or binding to the person, and the Privacy Pass architecture describes information that can leak depending on the deployment model. They need a separate age attestation mechanism and protection against token transfer. At least one option that is triple-blind by design, not only by policy, should be available in any ecosystem.<a href="#section-4.7-5" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="mapping">
+<section id="section-4.8">
+        <h3 id="name-mapping-to-existing-specifi">
+<a href="#section-4.8" class="section-number selfRef">4.8. </a><a href="#name-mapping-to-existing-specifi" class="section-name selfRef">Mapping to Existing Specifications and Work in Progress</a>
+        </h3>
+<span id="name-mapping-to-existing-specific"></span><div id="tab-mapping">
+<table class="center" id="table-4">
+          <caption>
+<a href="#table-4" class="selfRef">Table 4</a>:
+<a href="#name-mapping-to-existing-specific" class="selfRef">Mapping to Existing Specifications</a>
+          </caption>
+<thead>
+            <tr>
+              <th class="text-left" rowspan="1" colspan="1">Function</th>
+              <th class="text-left" rowspan="1" colspan="1">Existing specifications</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="text-left" rowspan="1" colspan="1">Credential format with selective disclosure</td>
+              <td class="text-left" rowspan="1" colspan="1">ISO/IEC 18013-5 mdoc; SD-JWT <span>[<a href="#RFC9901" class="cite xref">RFC9901</a>]</span> and SD-JWT VC <span>[<a href="#I-D.ietf-oauth-sd-jwt-vc" class="cite xref">I-D.ietf-oauth-sd-jwt-vc</a>]</span>; W3C Verifiable Credentials</td>
+            </tr>
+            <tr>
+              <td class="text-left" rowspan="1" colspan="1">Request and presentation protocol</td>
+              <td class="text-left" rowspan="1" colspan="1">OpenID4VP <span>[<a href="#OpenID4VP" class="cite xref">OpenID4VP</a>]</span>; OpenID Connect claims for direct checks</td>
+            </tr>
+            <tr>
+              <td class="text-left" rowspan="1" colspan="1">Browser mediation</td>
+              <td class="text-left" rowspan="1" colspan="1">W3C Digital Credentials API <span>[<a href="#W3C-DC-API" class="cite xref">W3C-DC-API</a>]</span>
+</td>
+            </tr>
+            <tr>
+              <td class="text-left" rowspan="1" colspan="1">Unlinkable tokens</td>
+              <td class="text-left" rowspan="1" colspan="1">Privacy Pass <span>[<a href="#RFC9576" class="cite xref">RFC9576</a>]</span> <span>[<a href="#RFC9578" class="cite xref">RFC9578</a>]</span>; zero-knowledge proof schemes</td>
+            </tr>
+            <tr>
+              <td class="text-left" rowspan="1" colspan="1">Level of assurance and evaluation</td>
+              <td class="text-left" rowspan="1" colspan="1">IEEE 2089.1; ISO/IEC 27566-1; ISO/IEC 30107-3 for presentation attack detection</td>
+            </tr>
+            <tr>
+              <td class="text-left" rowspan="1" colspan="1">Assurance metadata across ecosystems</td>
+              <td class="text-left" rowspan="1" colspan="1">Proposed ISO/IEC 27566-4 <span>[<a href="#ISO-27566-4" class="cite xref">ISO-27566-4</a>]</span>
+</td>
+            </tr>
+          </tbody>
+        </table>
+</div>
+<p id="section-4.8-2">Each entry is a building block. None of them alone delivers the properties described in <a href="#info-model" class="auto internal xref">Section 4.2</a> and <a href="#triple-blind" class="auto internal xref">Section 4.7</a>; those depend on how the components are combined, configured and assessed.<a href="#section-4.8-2" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="trust-model">
+<section id="section-4.9">
+        <h3 id="name-trust-model">
+<a href="#section-4.9" class="section-number selfRef">4.9. </a><a href="#name-trust-model" class="section-name selfRef">Trust Model</a>
+        </h3>
+<p id="section-4.9-1">Signature verification is necessary but not sufficient. Before acting on an assertion, a relying party needs to establish that:<a href="#section-4.9-1" class="pilcrow">¶</a></p>
+<ol start="1" type="1" class="normal type-1" id="section-4.9-2">
+<li id="section-4.9-2.1">
+            <p id="section-4.9-2.1.1">the assertion is authentic: its signature verifies against a key of the stated issuer or provider;<a href="#section-4.9-2.1.1" class="pilcrow">¶</a></p>
+</li>
+          <li id="section-4.9-2.2">
+            <p id="section-4.9-2.2.1">the issuer or provider is trusted for this claim, which the relying party learns from a trust framework, scheme operator or trust list rather than from the assertion itself;<a href="#section-4.9-2.2.1" class="pilcrow">¶</a></p>
+</li>
+          <li id="section-4.9-2.3">
+            <p id="section-4.9-2.3.1">the level of assurance, and any other assurance characteristics relevant to the use case such as binding or privacy properties, meet the relying party's requirements;<a href="#section-4.9-2.3.1" class="pilcrow">¶</a></p>
+</li>
+          <li id="section-4.9-2.4">
+            <p id="section-4.9-2.4.1">the assertion is valid: unexpired, not revoked and intended for this relying party; and<a href="#section-4.9-2.4.1" class="pilcrow">¶</a></p>
+</li>
+          <li id="section-4.9-2.5">
+            <p id="section-4.9-2.5.1">the presentation is bound to the person presenting it to the degree the use case requires, recognising that proof of control of a credential (holder binding) does not establish that its legitimate holder is the person present (contemporaneous person binding).<a href="#section-4.9-2.5.1" class="pilcrow">¶</a></p>
+</li>
+        </ol>
+<p id="section-4.9-3">The trust framework supplies verification keys, trust lists and assurance policies to relying parties in advance. It need not be involved in individual transactions, which keeps it from becoming a point of observation. Proposed ISO/IEC 27566-4 work on interoperability is intended to let relying parties make these judgements across independently governed ecosystems.<a href="#section-4.9-3" class="pilcrow">¶</a></p>
+</section>
+</div>
+</section>
+</div>
+<div id="layered">
+<section id="section-5">
+      <h2 id="name-layered-deployment">
+<a href="#section-5" class="section-number selfRef">5. </a><a href="#name-layered-deployment" class="section-name selfRef">Layered Deployment</a>
+      </h2>
+<p id="section-5-1">No technology is 100% effective, so age assurance works best as one layer among several. Establishing age lets a service apply age-appropriate protections. It does not replace safer design, moderation, parental controls or law enforcement. Service, device and network layers can each contribute, and every layer relied on for compliance should meet the same standards of assurance and accountability.<a href="#section-5-1" class="pilcrow">¶</a></p>
+<div id="service-layer">
+<section id="section-5.1">
+        <h3 id="name-service-layer">
+<a href="#section-5.1" class="section-number selfRef">5.1. </a><a href="#name-service-layer" class="section-name selfRef">Service Layer</a>
+        </h3>
+<p id="section-5.1-1">The relying party is where the decision to grant or restrict access is made, and where legal responsibility usually sits. It determines the assurance characteristics appropriate to its risk, including but not limited to a level of assurance, chooses one or more providers and applies the result. This document treats the service layer as the primary point of decision, informed by assertions that may originate at any layer.<a href="#section-5.1-1" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="os-layer">
+<section id="section-5.2">
+        <h3 id="name-operating-system-and-app-st">
+<a href="#section-5.2" class="section-number selfRef">5.2. </a><a href="#name-operating-system-and-app-st" class="section-name selfRef">Operating System and App Store Layer</a>
+        </h3>
+<p id="section-5.2-1">Operating system and app store signals can make age assurance easier, particularly where parents have set an age range for a child's device. They are well suited to laws that require parental consent or controls. Three conditions apply where they are used to meet legal obligations:<a href="#section-5.2-1" class="pilcrow">¶</a></p>
+<ol start="1" type="1" class="normal type-1" id="section-5.2-2">
+<li id="section-5.2-2.1">
+            <p id="section-5.2-2.1.1"><strong>Equivalent assurance.</strong> The signal carries a stated level of assurance, is independently assessed and has an accountable party, as for any other source of age assertions.<a href="#section-5.2-2.1.1" class="pilcrow">¶</a></p>
+</li>
+          <li id="section-5.2-2.2">
+            <p id="section-5.2-2.2.1"><strong>Architectural openness.</strong> The interface between platform and service is an open standard. Relying parties can accept assertions from independent providers through the same interface (provider independence). Assertions are portable between trust frameworks, and no central intermediary is mandatory, so there is no single point of failure.<a href="#section-5.2-2.2.1" class="pilcrow">¶</a></p>
+</li>
+          <li id="section-5.2-2.3">
+            <p id="section-5.2-2.3.1"><strong>No tracking.</strong> Where the architecture allows, the platform should be technically unable to learn which relying parties request the signal. Where it can observe requests, it must not retain or use them, and that weaker, policy-based protection should be disclosed (<a href="#triple-blind" class="auto internal xref">Section 4.7</a>).<a href="#section-5.2-2.3.1" class="pilcrow">¶</a></p>
+</li>
+        </ol>
+<p id="section-5.2-3"><span>[<a href="#IAB-Statement-2026" class="cite xref">IAB-Statement-2026</a>]</span> considers device-based mechanisms the most promising current approach, provided the interface between device and service is an open standard and shared devices have robust multi-user support. This document agrees that on-device processing offers strong privacy. It notes that on-device processing is not limited to operating system vendors: independent providers can run verification and estimation on the user's device (<a href="#methods" class="auto internal xref">Section 2</a>), delivering the privacy benefit without concentrating control in a few platforms.<a href="#section-5.2-3" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="network-layer">
+<section id="section-5.3">
+        <h3 id="name-network-layer">
+<a href="#section-5.3" class="section-number selfRef">5.3. </a><a href="#name-network-layer" class="section-name selfRef">Network Layer</a>
+        </h3>
+<p id="section-5.3-1">"Network" is often listed among the layers at which age assurance can operate, but there are few examples of it in practice. Operators already apply category-based filtering for subscribers who choose it, and in some jurisdictions by default on mobile connections. Such filtering avoids new personal data collection. The network layer may also have a more constructive role than blocking alone.<a href="#section-5.3-1" class="pilcrow">¶</a></p>
+<p id="section-5.3-2">A mobile network operator often holds verified information about its account holder, including their age, and knows whether the account holder or a parent or guardian has set controls on a line. In principle, it could express this as a privacy-preserving age-range signal (for example under 13, 13 to 17 or 18+) rather than an enforcement decision. For example, it could indicate to a relying party, at the user's request, that a connection is subject to under-18 controls, without revealing the subscriber's identity. Such a signal could trigger safer defaults on a service, or a stronger check, without the network inspecting content. Because the person using a line may not be the account holder, such a signal describes the controls on the line rather than the age of its user.<a href="#section-5.3-2" class="pilcrow">¶</a></p>
+<p id="section-5.3-3">Network signals face the same conditions as other upstream signals. They must be user-initiated or user-visible, must not create a persistent identifier observable by services, and must not be a vector for network-level censorship. They complement, rather than replace, checks at the service layer.<a href="#section-5.3-3" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="geolocation">
+<section id="section-5.4">
+        <h3 id="name-geolocation">
+<a href="#section-5.4" class="section-number selfRef">5.4. </a><a href="#name-geolocation" class="section-name selfRef">Geolocation</a>
+        </h3>
+<p id="section-5.4-1">Age requirements vary by jurisdiction, so relying parties need some assurance of where a user is. Location assurance should be proportionate and privacy-preserving, for example by using coarse location rather than continuous tracking. VPN circumvention is a risk to be addressed in proportion to harm. Any approach to VPNs should respect their legitimate privacy and security benefits for users of all ages. Device-based location checks can return binary responses that confirm only whether a user is within a regulated jurisdiction, not their current location. Privacy-preserving location assurance could also use cryptographic proofs of jurisdictional eligibility, provided the underlying location evidence is trustworthy. Such approaches require an explicit trust model and measures against location spoofing. They should avoid unnecessary disclosure of precise location or persistent identifiers.<a href="#section-5.4-1" class="pilcrow">¶</a></p>
+</section>
+</div>
+</section>
+</div>
+<div id="determining">
+<section id="section-6">
+      <h2 id="name-determining-the-appropriate">
+<a href="#section-6" class="section-number selfRef">6. </a><a href="#name-determining-the-appropriate" class="section-name selfRef">Determining the Appropriate Level</a>
+      </h2>
+<p id="section-6-1">The appropriate level of assurance for a use case is a decision for legislators, regulators and services. Neither IEEE 2089.1 nor this document prescribes levels for particular services. A level is only part of the requirement: the binding, privacy and inclusion characteristics a context needs should be specified alongside it. The following considerations bear on that decision:<a href="#section-6-1" class="pilcrow">¶</a></p>
+<ul class="normal">
+<li class="normal" id="section-6-2.1">
+          <p id="section-6-2.1.1"><strong>Severity of harm</strong> the restriction is meant to prevent, and whether it is reversible.<a href="#section-6-2.1.1" class="pilcrow">¶</a></p>
+</li>
+        <li class="normal" id="section-6-2.2">
+          <p id="section-6-2.2.1"><strong>Whether a specific legal age limit applies</strong>, and whether a date of birth or only a threshold is needed.<a href="#section-6-2.2.1" class="pilcrow">¶</a></p>
+</li>
+        <li class="normal" id="section-6-2.3">
+          <p id="section-6-2.3.1"><strong>Incentive and capability to circumvent</strong>, including the likelihood of collusion by adults.<a href="#section-6-2.3.1" class="pilcrow">¶</a></p>
+</li>
+        <li class="normal" id="section-6-2.4">
+          <p id="section-6-2.4.1"><strong>Whether the aim is blocking or tailoring</strong>, since age-appropriate design may need only an age band.<a href="#section-6-2.4.1" class="pilcrow">¶</a></p>
+</li>
+        <li class="normal" id="section-6-2.5">
+          <p id="section-6-2.5.1"><strong>The population affected</strong>, including people who lack documents or for whom some methods perform less well.<a href="#section-6-2.5.1" class="pilcrow">¶</a></p>
+</li>
+        <li class="normal" id="section-6-2.6">
+          <p id="section-6-2.6.1"><strong>Privacy impact</strong> of the methods that could meet a given level, and the availability of methods with lower impact.<a href="#section-6-2.6.1" class="pilcrow">¶</a></p>
+</li>
+        <li class="normal" id="section-6-2.7">
+          <p id="section-6-2.7.1"><strong>The size and nature of an existing user base</strong>, which affects the feasibility of checking existing accounts.<a href="#section-6-2.7.1" class="pilcrow">¶</a></p>
+</li>
+        <li class="normal" id="section-6-2.8">
+          <p id="section-6-2.8.1"><strong>The consequences of error in both directions</strong>: wrongly admitting someone below the threshold, and wrongly excluding someone above it.<a href="#section-6-2.8.1" class="pilcrow">¶</a></p>
+</li>
+      </ul>
+<p id="section-6-3">Core Internet infrastructure (connectivity, routing and DNS) should remain neutral, supporting only optional, user-chosen signals.<a href="#section-6-3" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="recommendations">
+<section id="section-7">
+      <h2 id="name-recommendations">
+<a href="#section-7" class="section-number selfRef">7. </a><a href="#name-recommendations" class="section-name selfRef">Recommendations</a>
+      </h2>
+<p id="section-7-1">The following are this document's technical recommendations. Proposals that concern regulation rather than Internet architecture are collected in <a href="#policy" class="auto internal xref">Appendix B</a>.<a href="#section-7-1" class="pilcrow">¶</a></p>
+<ol start="1" type="1" class="normal type-1" id="section-7-2">
+<li id="section-7-2.1">
+          <p id="section-7-2.1.1"><strong>Express assurance in standard terms.</strong> Assertions should carry a level of assurance on a standard scale, so that requirements can be stated as outcomes rather than technologies. A level summarises confidence in the result; it does not replace the characteristics in Recommendation 2.<a href="#section-7-2.1.1" class="pilcrow">¶</a></p>
+</li>
+        <li id="section-7-2.2">
+          <p id="section-7-2.2.1"><strong>Treat assurance as multidimensional.</strong> Privacy properties, binding characteristics and inclusion should be expressed alongside the level of assurance, not folded into it.<a href="#section-7-2.2.1" class="pilcrow">¶</a></p>
+</li>
+        <li id="section-7-2.3">
+          <p id="section-7-2.3.1"><strong>Disclose only what is needed.</strong> Where a relying party needs to know only whether a user is above or below a threshold, it should not ordinarily receive the user's identity, date of birth or the evidence used.<a href="#section-7-2.3.1" class="pilcrow">¶</a></p>
+</li>
+        <li id="section-7-2.4">
+          <p id="section-7-2.4.1"><strong>Do not retain or repurpose.</strong> Personal data used for age assurance should not be kept beyond what is needed to provide, improve and audit the service or meet legal obligations, with transparency about any retention.<a href="#section-7-2.4.1" class="pilcrow">¶</a></p>
+</li>
+        <li id="section-7-2.5">
+          <p id="section-7-2.5.1"><strong>Offer at least one option that is triple-blind by design.</strong> Every ecosystem should include a route in which neither the relying party, the provider nor the platform can build a record of the age assurance transactions a user makes, enforced technically rather than only by policy.<a href="#section-7-2.5.1" class="pilcrow">¶</a></p>
+</li>
+        <li id="section-7-2.6">
+          <p id="section-7-2.6.1"><strong>Make assurance information available along the chain.</strong> Level of assurance, provenance and validity should remain determinable when an assertion is reused or passed between systems, through the presentation or the trust framework, without exposing more metadata than the relying party needs.<a href="#section-7-2.6.1" class="pilcrow">¶</a></p>
+</li>
+        <li id="section-7-2.7">
+          <p id="section-7-2.7.1"><strong>Reuse without tracking.</strong> Interoperability must not depend on a persistent identifier that allows relying parties or providers to correlate a user's activity.<a href="#section-7-2.7.1" class="pilcrow">¶</a></p>
+</li>
+        <li id="section-7-2.8">
+          <p id="section-7-2.8.1"><strong>Build in architectural openness.</strong> Open interfaces, provider independence, portability of assertions between trust frameworks and no mandatory central intermediary.<a href="#section-7-2.8.1" class="pilcrow">¶</a></p>
+</li>
+        <li id="section-7-2.9">
+          <p id="section-7-2.9.1"><strong>Offer alternatives.</strong> No single method should be the only route. Users without documents, credit histories, smartphones or suitable biometric characteristics need another way through.<a href="#section-7-2.9.1" class="pilcrow">¶</a></p>
+</li>
+        <li id="section-7-2.10">
+          <p id="section-7-2.10.1"><strong>Treat age as distinct from identity.</strong> Age can be derived from identity, but it can also be established without identity, and some users will prefer that.<a href="#section-7-2.10.1" class="pilcrow">¶</a></p>
+</li>
+        <li id="section-7-2.11">
+          <p id="section-7-2.11.1"><strong>Avoid unnecessary checks.</strong> Relying parties should not request age assertions for content or functions with no age-related requirement, and should restrict only the content or features an obligation covers rather than a whole service.<a href="#section-7-2.11.1" class="pilcrow">¶</a></p>
+</li>
+        <li id="section-7-2.12">
+          <p id="section-7-2.12.1"><strong>Handle failure explicitly.</strong> Architectures should define fallback methods, routes to challenge and correct a wrong determination, and behaviour when a provider or status service is unavailable (<a href="#failure" class="auto internal xref">Section 8.1</a>).<a href="#section-7-2.12.1" class="pilcrow">¶</a></p>
+</li>
+        <li id="section-7-2.13">
+          <p id="section-7-2.13.1"><strong>Standardise the missing pieces.</strong> The IETF, W3C, OpenID Foundation, ISO and IEEE should coordinate on how a website expresses an age requirement, how assurance metadata is carried and how unlinkable reuse is achieved, building on existing work rather than a separate age assurance stack.<a href="#section-7-2.13.1" class="pilcrow">¶</a></p>
+</li>
+      </ol>
+</section>
+</div>
+<div id="security">
+<section id="section-8">
+      <h2 id="name-security-considerations">
+<a href="#section-8" class="section-number selfRef">8. </a><a href="#name-security-considerations" class="section-name selfRef">Security Considerations</a>
+      </h2>
+<p id="section-8-1">No age assurance system is immune from attack. Mitigations should be proportionate to the risk of the use case and tested independently.<a href="#section-8-1" class="pilcrow">¶</a></p>
+<p id="section-8-2">The architecture should be assessed against at least the following adversaries: a user below the threshold seeking access; an adult colluding with that user, for example by completing a check or lending a credential or device; a compromised or malicious wallet or holder agent; a dishonest or compromised issuer or provider; a malicious relying party seeking to identify or track users; and compromised ecosystem infrastructure, such as a trust list or status service. Privacy and assurance claims should state which of these adversaries they address.<a href="#section-8-2" class="pilcrow">¶</a></p>
+<ul class="normal">
+<li class="normal" id="section-8-3.1">
+          <p id="section-8-3.1.1"><strong>Presentation attacks.</strong> Masks, printed photos and replayed video presented to a camera. Mitigated by presentation attack detection evaluated to ISO/IEC 30107-3.<a href="#section-8-3.1.1" class="pilcrow">¶</a></p>
+</li>
+        <li class="normal" id="section-8-3.2">
+          <p id="section-8-3.2.1"><strong>Injection attacks.</strong> Synthetic or manipulated media injected into the capture pipeline, bypassing the camera. Mitigated by capture integrity checks and injection attack detection, evaluated for example to CEN/TS 18099.<a href="#section-8-3.2.1" class="pilcrow">¶</a></p>
+</li>
+        <li class="normal" id="section-8-3.3">
+          <p id="section-8-3.3.1"><strong>Forged or altered evidence.</strong> Mitigated by validating issuer signatures on digital credentials and security features on documents.<a href="#section-8-3.3.1" class="pilcrow">¶</a></p>
+</li>
+        <li class="normal" id="section-8-3.4">
+          <p id="section-8-3.4.1"><strong>Credential sharing and collusion.</strong> An adult passing a reusable assertion, or performing a check, on behalf of a minor. Device possession and local authentication do not prevent this on their own: a parent can hand over an unlocked device or its PIN, and a local biometric unlock shows only that an enrolled user is present. Contemporaneous person binding, short validity periods and limits on additional enrolment raise the bar for higher-risk uses.<a href="#section-8-3.4.1" class="pilcrow">¶</a></p>
+</li>
+        <li class="normal" id="section-8-3.5">
+          <p id="section-8-3.5.1"><strong>Replay.</strong> Reuse of an assertion at another relying party or another time. Mitigated by audience restriction, nonces and expiry.<a href="#section-8-3.5.1" class="pilcrow">¶</a></p>
+</li>
+        <li class="normal" id="section-8-3.6">
+          <p id="section-8-3.6.1"><strong>Malicious relying parties.</strong> Collecting excess metadata or linking presentations. Mitigated by minimal, coarse metadata and single-use or zero-knowledge presentations.<a href="#section-8-3.6.1" class="pilcrow">¶</a></p>
+</li>
+        <li class="normal" id="section-8-3.7">
+          <p id="section-8-3.7.1"><strong>Compromised trust infrastructure.</strong> A subverted trust list or status service could admit bad issuers or track status checks. Mitigated by distributing trust lists in advance, privacy-preserving status mechanisms and audit of scheme operators.<a href="#section-8-3.7.1" class="pilcrow">¶</a></p>
+</li>
+        <li class="normal" id="section-8-3.8">
+          <p id="section-8-3.8.1"><strong>Phishing and normalisation of data requests.</strong> Users who become used to sharing documents with unfamiliar sites are more exposed to fraud, as noted in <span>[<a href="#RFC9998" class="cite xref">RFC9998</a>]</span>. Mitigated by architectures that never send documents to relying parties, by recognisable and certified providers, and by user-held credentials presented through trusted browser or wallet interfaces.<a href="#section-8-3.8.1" class="pilcrow">¶</a></p>
+</li>
+        <li class="normal" id="section-8-3.9">
+          <p id="section-8-3.9.1"><strong>Breach of provider data.</strong> Mitigated by not retaining personal data after the check, by on-device processing, by separating providers from relying parties and by security controls whose effectiveness is independently assessed. Reported breaches of retained identity documents illustrate why minimisation and non-retention matter.<a href="#section-8-3.9.1" class="pilcrow">¶</a></p>
+</li>
+        <li class="normal" id="section-8-3.10">
+          <p id="section-8-3.10.1"><strong>Concentration risk.</strong> Reliance on a single platform or provider creates a single point of failure and attack. A plural, interoperable market reduces it.<a href="#section-8-3.10.1" class="pilcrow">¶</a></p>
+</li>
+      </ul>
+<div id="failure">
+<section id="section-8.1">
+        <h3 id="name-failure-handling">
+<a href="#section-8.1" class="section-number selfRef">8.1. </a><a href="#name-failure-handling" class="section-name selfRef">Failure Handling</a>
+        </h3>
+<p id="section-8.1-1">Every method fails for some people, and every service is sometimes unavailable. Architectures should define:<a href="#section-8.1-1" class="pilcrow">¶</a></p>
+<ul class="normal">
+<li class="normal" id="section-8.1-2.1">
+            <p id="section-8.1-2.1.1">what happens when a method cannot reach a result, normally by offering another method at the same level rather than a lower one;<a href="#section-8.1-2.1.1" class="pilcrow">¶</a></p>
+</li>
+          <li class="normal" id="section-8.1-2.2">
+            <p id="section-8.1-2.2.1">how a person can challenge and correct a wrong determination, including one made by estimation or inference, without disclosing more data than the original check required;<a href="#section-8.1-2.2.1" class="pilcrow">¶</a></p>
+</li>
+          <li class="normal" id="section-8.1-2.3">
+            <p id="section-8.1-2.3.1">what a relying party does when a provider, issuer or status service is unavailable, and whether it fails open or closed given the risk; and<a href="#section-8.1-2.3.1" class="pilcrow">¶</a></p>
+</li>
+          <li class="normal" id="section-8.1-2.4">
+            <p id="section-8.1-2.4.1">how revocation of a compromised issuer, key or credential reaches relying parties.<a href="#section-8.1-2.4.1" class="pilcrow">¶</a></p>
+</li>
+        </ul>
+</section>
+</div>
+</section>
+</div>
+<div id="privacy">
+<section id="section-9">
+      <h2 id="name-privacy-considerations">
+<a href="#section-9" class="section-number selfRef">9. </a><a href="#name-privacy-considerations" class="section-name selfRef">Privacy Considerations</a>
+      </h2>
+<p id="section-9-1">Privacy should be designed into age assurance rather than traded against effectiveness. The architectures in <a href="#architecture" class="auto internal xref">Section 4</a> show that independently measurable effectiveness, strong privacy protections and interoperability can coexist, provided the full system is engineered and assessed to deliver them.<a href="#section-9-1" class="pilcrow">¶</a></p>
+<ul class="normal">
+<li class="normal" id="section-9-2.1">
+          <p id="section-9-2.1.1"><strong>Minimisation.</strong> Relying parties receive a threshold result, not identity, date of birth or evidence. Providers process only what the chosen method needs.<a href="#section-9-2.1.1" class="pilcrow">¶</a></p>
+</li>
+        <li class="normal" id="section-9-2.2">
+          <p id="section-9-2.2.1"><strong>Retention.</strong> Images, documents and other inputs are deleted once the check is complete, except where retention is needed to audit the service or meet a legal obligation, and that retention is disclosed.<a href="#section-9-2.2.1" class="pilcrow">¶</a></p>
+</li>
+        <li class="normal" id="section-9-2.3">
+          <p id="section-9-2.3.1"><strong>Purpose limitation.</strong> Data processed for age assurance is not reused for profiling, advertising or other purposes.<a href="#section-9-2.3.1" class="pilcrow">¶</a></p>
+</li>
+        <li class="normal" id="section-9-2.4">
+          <p id="section-9-2.4.1"><strong>Unlinkability.</strong> Neither providers, issuers nor platforms should be able to learn which relying parties a user visits, and relying parties should not be able to correlate one user across services. Batch-issued single-use credentials, zero-knowledge proofs and blind-signature tokens support this.<a href="#section-9-2.4.1" class="pilcrow">¶</a></p>
+</li>
+        <li class="normal" id="section-9-2.5">
+          <p id="section-9-2.5.1"><strong>Organisational separation.</strong> Independent providers keep the personal data used in a check separate from the relying party, which may have commercial incentives to collect it. Independent providers are also more easily regulated and audited.<a href="#section-9-2.5.1" class="pilcrow">¶</a></p>
+</li>
+        <li class="normal" id="section-9-2.6">
+          <p id="section-9-2.6.1"><strong>Age is not identity.</strong> Methods that establish age without identity, such as estimation, or on-device age verification give users a choice not to disclose identity at all.<a href="#section-9-2.6.1" class="pilcrow">¶</a></p>
+</li>
+        <li class="normal" id="section-9-2.7">
+          <p id="section-9-2.7.1"><strong>Location.</strong> Jurisdiction can often be established at a coarse level, avoiding precise or continuous geolocation and disclosing only whether or not a user is within a regulated jurisdiction for a particular use case.<a href="#section-9-2.7.1" class="pilcrow">¶</a></p>
+</li>
+      </ul>
+<p id="section-9-3">Some privacy costs remain even in well-designed systems, for example where a platform mediates presentation or a provider must briefly process a face or document. The properties above reduce them substantially, and can be specified in standards, tested in certification and enforced by data protection regulators.<a href="#section-9-3" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="scope">
+<section id="section-10">
+      <h2 id="name-scope-and-policy-neutrality">
+<a href="#section-10" class="section-number selfRef">10. </a><a href="#name-scope-and-policy-neutrality" class="section-name selfRef">Scope and Policy Neutrality</a>
+      </h2>
+<p id="section-10-1">This document does not address whether age restrictions should be imposed, on which content or services, or at what ages. Those are decisions for legislatures, regulators and services, and they engage rights that must be balanced, including children's rights under the UN Convention on the Rights of the Child and the rights to privacy and freedom of expression of users of all ages.<a href="#section-10-1" class="pilcrow">¶</a></p>
+<p id="section-10-2">This document is neutral on whether restrictions should exist, but it is not neutral about how safely and privately they should be implemented where they do exist. An architecture that implements a restriction should protect freedom of expression, access to information and association by minimising what is disclosed and by avoiding checks where no requirement applies. It should also provide a route to challenge and correct a wrong determination, since children and adults whose age is incorrectly assessed may otherwise lose access to lawful content or services.<a href="#section-10-2" class="pilcrow">¶</a></p>
+<p id="section-10-3">Whether a jurisdiction should impose an age restriction, what age should apply and to which services are not questions the IETF needs to resolve in order to produce useful Internet architecture, and this document expresses no view on them. The same applies to broader policy arguments, such as whether age assurance burdens all users disproportionately. Technical feasibility, by contrast, is within scope: verification, estimation and inference are deployed at scale today under regimes in the UK, the EU, Australia and US states. Deployment shows feasibility; it does not by itself demonstrate effectiveness, privacy or inclusive access, which must be measured (<a href="#measuring" class="auto internal xref">Section 3</a>). The technical community can contribute most by making whatever restrictions are adopted as accurate, private, inclusive and accountable as possible.<a href="#section-10-3" class="pilcrow">¶</a></p>
+<p id="section-10-4">The author is Executive Director of the Age Verification Providers Association, a trade body for providers of age assurance technology. The views in this document draw on published positions held in common by its members, and are offered in the author's individual capacity under IETF participation rules.<a href="#section-10-4" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="iana-considerations">
+<section id="section-11">
+      <h2 id="name-iana-considerations">
+<a href="#section-11" class="section-number selfRef">11. </a><a href="#name-iana-considerations" class="section-name selfRef">IANA Considerations</a>
+      </h2>
+<p id="section-11-1">This document has no IANA actions.<a href="#section-11-1" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="sec-informative-references">
+<section id="section-12">
+      <h2 id="name-informative-references">
+<a href="#section-12" class="section-number selfRef">12. </a><a href="#name-informative-references" class="section-name selfRef">Informative References</a>
+      </h2>
+<dl class="references">
+<dt id="AU-AATT">[AU-AATT]</dt>
+      <dd>
+<span class="refAuthor">Department of Infrastructure, Transport, Regional Development, Communications, Sport and the Arts (Australia)</span>, <span class="refTitle">"Age Assurance Technology Trial: Final Report"</span>, <time datetime="2025-08-31" class="refDate">31 August 2025</time>, <span>&lt;<a href="https://www.infrastructure.gov.au/department/media/publications/age-assurance-technology-trial-final-report">https://www.infrastructure.gov.au/department/media/publications/age-assurance-technology-trial-final-report</a>&gt;</span>. <span class="annotation">Conducted by the Age Check Certification Scheme.</span>
+      </dd>
+<dd class="break"></dd>
+<dt id="CEN-TS-18099">[CEN-TS-18099]</dt>
+      <dd>
+<span class="refAuthor">CEN</span>, <span class="refTitle">"Biometric data injection attack detection"</span>, <span class="seriesInfo">CEN/TS 18099:2024</span>, <time datetime="2024" class="refDate">2024</time>. </dd>
+<dd class="break"></dd>
+<dt id="Discord-AA">[Discord-AA]</dt>
+      <dd>
+<span class="refAuthor">Discord</span>, <span class="refTitle">"Age Assurance on Discord: Vendors, Methods, and Your Data"</span>, <span>&lt;<a href="https://discord.com/safety/age-assurance-on-discord-vendors-methods-and-your-data">https://discord.com/safety/age-assurance-on-discord-vendors-methods-and-your-data</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="EC-Art28">[EC-Art28]</dt>
+      <dd>
+<span class="refAuthor">European Commission</span>, <span class="refTitle">"Guidelines on measures to ensure a high level of privacy, safety and security for minors online, pursuant to Article 28 of Regulation (EU) 2022/2065"</span>, <time datetime="2025" class="refDate">2025</time>. </dd>
+<dd class="break"></dd>
+<dt id="eSafety-SMMA-3M">[eSafety-SMMA-3M]</dt>
+      <dd>
+<span class="refAuthor">eSafety Commissioner (Australia)</span>, <span class="refTitle">"Early days, early insights: Understanding experiences of social media age restrictions at the three-month follow-up"</span>, <time datetime="2026-07-31" class="refDate">31 July 2026</time>, <span>&lt;<a href="https://www.esafety.gov.au/research/social-media-age-restrictions-evaluation/early-days-early-insights-three-months-report">https://www.esafety.gov.au/research/social-media-age-restrictions-evaluation/early-days-early-insights-three-months-report</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="EU-AV-Blueprint">[EU-AV-Blueprint]</dt>
+      <dd>
+<span class="refAuthor">European Commission</span>, <span class="refTitle">"EU age verification"</span>, <time datetime="2025-07-14" class="refDate">14 July 2025</time>, <span>&lt;<a href="https://digital-strategy.ec.europa.eu/en/policies/eu-age-verification">https://digital-strategy.ec.europa.eu/en/policies/eu-age-verification</a>&gt;</span>. <span class="annotation">Age verification blueprint, first published 14 July 2025. Specifications at https://ageverification.dev/.</span>
+      </dd>
+<dd class="break"></dd>
+<dt id="euCONSENT">[euCONSENT]</dt>
+      <dd>
+<span class="refAuthor">euCONSENT ASBL</span>, <span class="refTitle">"euCONSENT"</span>, <span>&lt;<a href="https://euconsent.eu">https://euconsent.eu</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="I-D.ietf-oauth-sd-jwt-vc">[I-D.ietf-oauth-sd-jwt-vc]</dt>
+      <dd>
+<span class="refAuthor">Terbu, O.</span>, <span class="refAuthor">Fett, D.</span>, and <span class="refAuthor">B. Campbell</span>, <span class="refTitle">"SD-JWT-based Verifiable Digital Credentials (SD-JWT VC)"</span>, <span class="refContent">Work in Progress</span>, <span class="seriesInfo">Internet-Draft, draft-ietf-oauth-sd-jwt-vc-22</span>, <time datetime="2026-10-27" class="refDate">27 October 2026</time>, <span>&lt;<a href="https://datatracker.ietf.org/doc/html/draft-ietf-oauth-sd-jwt-vc-22">https://datatracker.ietf.org/doc/html/draft-ietf-oauth-sd-jwt-vc-22</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="I-D.knodel-age-arch">[I-D.knodel-age-arch]</dt>
+      <dd>
+<span class="refAuthor">Knodel, M.</span>, <span class="refAuthor">Scalone, G. A.</span>, <span class="refAuthor">Newton, T.</span>, and <span class="refAuthor">A. Hingle</span>, <span class="refTitle">"Age Verification Architecture"</span>, <span class="refContent">Work in Progress</span>, <span class="seriesInfo">Internet-Draft, draft-knodel-age-arch-01</span>, <time datetime="2026-07" class="refDate">July 2026</time>, <span>&lt;<a href="https://datatracker.ietf.org/doc/draft-knodel-age-arch/">https://datatracker.ietf.org/doc/draft-knodel-age-arch/</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="IAB-Statement-2026">[IAB-Statement-2026]</dt>
+      <dd>
+<span class="refAuthor">Internet Architecture Board</span>, <span class="refTitle">"IAB Statement on Age-Based Restrictions and Online Safety"</span>, <time datetime="2026-08-24" class="refDate">24 August 2026</time>, <span>&lt;<a href="https://datatracker.ietf.org/doc/statement-iab-statement-on-age-based-restrictions-and-online-safety/">https://datatracker.ietf.org/doc/statement-iab-statement-on-age-based-restrictions-and-online-safety/</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="IEEE-2089.1">[IEEE-2089.1]</dt>
+      <dd>
+<span class="refAuthor">IEEE</span>, <span class="refTitle">"IEEE Standard for Online Age Verification"</span>, <span class="seriesInfo">IEEE Std 2089.1-2024</span>, <time datetime="2024" class="refDate">2024</time>. </dd>
+<dd class="break"></dd>
+<dt id="IEEE-P2089.3">[IEEE-P2089.3]</dt>
+      <dd>
+<span class="refAuthor">IEEE</span>, <span class="refTitle">"Standard for Online Parental Consent"</span>, <span class="seriesInfo">IEEE P2089.3</span>. <span class="annotation">Work in progress.</span>
+      </dd>
+<dd class="break"></dd>
+<dt id="ISO-18013-5">[ISO-18013-5]</dt>
+      <dd>
+<span class="refAuthor">ISO/IEC</span>, <span class="refTitle">"Personal identification: ISO-compliant driving licence, Part 5: Mobile driving licence (mDL) application"</span>, <span class="seriesInfo">ISO/IEC 18013-5:2021</span>, <time datetime="2021" class="refDate">2021</time>. </dd>
+<dd class="break"></dd>
+<dt id="ISO-27566-1">[ISO-27566-1]</dt>
+      <dd>
+<span class="refAuthor">ISO/IEC</span>, <span class="refTitle">"Information security, cybersecurity and privacy protection: Age assurance systems, Part 1: Framework"</span>, <span class="seriesInfo">ISO/IEC 27566-1:2025</span>, <time datetime="2025-12" class="refDate">December 2025</time>, <span>&lt;<a href="https://www.iso.org/standard/88143.html">https://www.iso.org/standard/88143.html</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="ISO-27566-4">[ISO-27566-4]</dt>
+      <dd>
+<span class="refAuthor">ISO/IEC</span>, <span class="refTitle">"Age assurance systems, Part 4: Interoperability"</span>. <span class="annotation">Proposed work item, not yet published.</span>
+      </dd>
+<dd class="break"></dd>
+<dt id="ISO-30107-3">[ISO-30107-3]</dt>
+      <dd>
+<span class="refAuthor">ISO/IEC</span>, <span class="refTitle">"Information technology: Biometric presentation attack detection, Part 3: Testing and reporting"</span>, <span class="seriesInfo">ISO/IEC 30107-3:2023</span>, <time datetime="2023" class="refDate">2023</time>. </dd>
+<dd class="break"></dd>
+<dt id="NIST-FATE-AEV">[NIST-FATE-AEV]</dt>
+      <dd>
+<span class="refAuthor">NIST</span>, <span class="refTitle">"Face Analysis Technology Evaluation (FATE): Age Estimation and Verification"</span>. <span class="annotation">Ongoing evaluation.</span>
+      </dd>
+<dd class="break"></dd>
+<dt id="NIST-IR-8525">[NIST-IR-8525]</dt>
+      <dd>
+<span class="refAuthor">Hanaoka, K.</span>, <span class="refAuthor">Ngan, M.</span>, <span class="refAuthor">Yang, J.</span>, <span class="refAuthor">Quinn, G. W.</span>, <span class="refAuthor">Hom, A.</span>, and <span class="refAuthor">P. Grother</span>, <span class="refTitle">"Face Analysis Technology Evaluation: Age Estimation and Verification"</span>, <span class="seriesInfo">NIST IR 8525</span>, <time datetime="2024-05" class="refDate">May 2024</time>. </dd>
+<dd class="break"></dd>
+<dt id="Ofcom-HEAA">[Ofcom-HEAA]</dt>
+      <dd>
+<span class="refAuthor">Ofcom</span>, <span class="refTitle">"Guidance on highly effective age assurance"</span>, <time datetime="2025-01" class="refDate">January 2025</time>. </dd>
+<dd class="break"></dd>
+<dt id="OpenID4VP">[OpenID4VP]</dt>
+      <dd>
+<span class="refAuthor">OpenID Foundation</span>, <span class="refTitle">"OpenID for Verifiable Presentations 1.0"</span>, <time datetime="2025-07-09" class="refDate">9 July 2025</time>. <span class="annotation">Final Specification.</span>
+      </dd>
+<dd class="break"></dd>
+<dt id="RFC9576">[RFC9576]</dt>
+      <dd>
+<span class="refAuthor">Davidson, A.</span>, <span class="refAuthor">Iyengar, J.</span>, and <span class="refAuthor">C. A. Wood</span>, <span class="refTitle">"The Privacy Pass Architecture"</span>, <span class="seriesInfo">RFC 9576</span>, <span class="seriesInfo">DOI 10.17487/RFC9576</span>, <time datetime="2024-06" class="refDate">June 2024</time>, <span>&lt;<a href="https://www.rfc-editor.org/rfc/rfc9576">https://www.rfc-editor.org/rfc/rfc9576</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="RFC9578">[RFC9578]</dt>
+      <dd>
+<span class="refAuthor">Celi, S.</span>, <span class="refAuthor">Davidson, A.</span>, <span class="refAuthor">Valdez, S.</span>, and <span class="refAuthor">C. A. Wood</span>, <span class="refTitle">"Privacy Pass Issuance Protocols"</span>, <span class="seriesInfo">RFC 9578</span>, <span class="seriesInfo">DOI 10.17487/RFC9578</span>, <time datetime="2024-06" class="refDate">June 2024</time>, <span>&lt;<a href="https://www.rfc-editor.org/rfc/rfc9578">https://www.rfc-editor.org/rfc/rfc9578</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="RFC9901">[RFC9901]</dt>
+      <dd>
+<span class="refAuthor">Fett, D.</span>, <span class="refAuthor">Yasuda, K.</span>, and <span class="refAuthor">B. Campbell</span>, <span class="refTitle">"Selective Disclosure for JSON Web Tokens"</span>, <span class="seriesInfo">RFC 9901</span>, <span class="seriesInfo">DOI 10.17487/RFC9901</span>, <time datetime="2025-11" class="refDate">November 2025</time>, <span>&lt;<a href="https://www.rfc-editor.org/rfc/rfc9901">https://www.rfc-editor.org/rfc/rfc9901</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="RFC9998">[RFC9998]</dt>
+      <dd>
+<span class="refAuthor">Nottingham, M.</span> and <span class="refAuthor">M. Thomson</span>, <span class="refTitle">"Report from the IAB/W3C Workshop on Age-Based Restrictions on Content Access"</span>, <span class="seriesInfo">RFC 9998</span>, <span class="seriesInfo">DOI 10.17487/RFC9998</span>, <time datetime="2026-06" class="refDate">June 2026</time>, <span>&lt;<a href="https://www.rfc-editor.org/rfc/rfc9998">https://www.rfc-editor.org/rfc/rfc9998</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="W3C-DC-API">[W3C-DC-API]</dt>
+    <dd>
+<span class="refAuthor">W3C</span>, <span class="refTitle">"Digital Credentials"</span>, <time datetime="2026-09-04" class="refDate">4 September 2026</time>. <span class="annotation">W3C Working Draft.</span>
+      </dd>
+<dd class="break"></dd>
+</dl>
+</section>
+</div>
+<div id="comparison">
+<section id="appendix-A">
+      <h2 id="name-comparison-with-draft-knode">
+<a href="#appendix-A" class="section-number selfRef">Appendix A. </a><a href="#name-comparison-with-draft-knode" class="section-name selfRef">Comparison with draft-knodel-age-arch</a>
+      </h2>
+<span id="name-comparison-with-draft-knodel"></span><div id="tab-comparison">
+<table class="center" id="table-5">
+        <caption>
+<a href="#table-5" class="selfRef">Table 5</a>:
+<a href="#name-comparison-with-draft-knodel" class="selfRef">Comparison with draft-knodel-age-arch</a>
+        </caption>
+<thead>
+          <tr>
+            <th class="text-left" rowspan="1" colspan="1">Topic</th>
+            <th class="text-left" rowspan="1" colspan="1">draft-knodel-age-arch-01</th>
+            <th class="text-left" rowspan="1" colspan="1">This document</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="text-left" rowspan="1" colspan="1">Terminology</td>
+            <td class="text-left" rowspan="1" colspan="1">Treats age assurance as an umbrella term (Section 2.3) but states that biometric estimation is not age assurance (Section 2.4)</td>
+            <td class="text-left" rowspan="1" colspan="1">Uses terminology consistent with ISO/IEC 27566-1 throughout: verification, estimation and inference are all methods of age assurance</td>
+          </tr>
+          <tr>
+            <td class="text-left" rowspan="1" colspan="1">Facial age estimation</td>
+            <td class="text-left" rowspan="1" colspan="1">Assesses reliability with reference to NIST IR 7995 (2014)</td>
+            <td class="text-left" rowspan="1" colspan="1">Cites NIST IR 8525 (2024), the ongoing NIST evaluation and the Australian trial, and requires measured performance under deployment conditions</td>
+          </tr>
+          <tr>
+            <td class="text-left" rowspan="1" colspan="1">Document checks</td>
+            <td class="text-left" rowspan="1" colspan="1">Much of the analysis assumes hard-document review, while noting selective disclosure</td>
+            <td class="text-left" rowspan="1" colspan="1">Treats copying documents to relying parties as poor practice; describes provider-side inspection and selective disclosure</td>
+          </tr>
+          <tr>
+            <td class="text-left" rowspan="1" colspan="1">Analytical dimensions</td>
+            <td class="text-left" rowspan="1" colspan="1">Efficacy and privacy cost, organised by trust anchor</td>
+            <td class="text-left" rowspan="1" colspan="1">Adds assurance, accountability, interoperability and reuse; treats assurance as multidimensional</td>
+          </tr>
+          <tr>
+            <td class="text-left" rowspan="1" colspan="1">Privacy</td>
+            <td class="text-left" rowspan="1" colspan="1">Treats privacy cost as inherent in most methods</td>
+            <td class="text-left" rowspan="1" colspan="1">Distinguishes privacy enforced by design from privacy that rests on policy, and accepts that some costs remain</td>
+          </tr>
+          <tr>
+            <td class="text-left" rowspan="1" colspan="1">Network layer</td>
+            <td class="text-left" rowspan="1" colspan="1">Network filtering as a low-privacy-cost baseline</td>
+            <td class="text-left" rowspan="1" colspan="1">Network signals as one optional layer, subject to the same assurance and tracking conditions</td>
+          </tr>
+          <tr>
+            <td class="text-left" rowspan="1" colspan="1">Feasibility</td>
+            <td class="text-left" rowspan="1" colspan="1">Concludes that advanced approaches are currently infeasible or have significant downsides</td>
+            <td class="text-left" rowspan="1" colspan="1">Deployment at scale shows feasibility; effectiveness, privacy and inclusion must still be measured</td>
+          </tr>
+          <tr>
+            <td class="text-left" rowspan="1" colspan="1">Policy</td>
+            <td class="text-left" rowspan="1" colspan="1">Includes some policy conclusions alongside architectural analysis</td>
+            <td class="text-left" rowspan="1" colspan="1">Neutral on whether, where and at what age to restrict; not neutral on how safely and privately restrictions are implemented</td>
+          </tr>
+        </tbody>
+      </table>
+</div>
+</section>
+</div>
+<div id="policy">
+<section id="appendix-B">
+      <h2 id="name-policy-considerations">
+<a href="#appendix-B" class="section-number selfRef">Appendix B. </a><a href="#name-policy-considerations" class="section-name selfRef">Policy Considerations</a>
+      </h2>
+<p id="appendix-B-1">This appendix collects proposals that concern regulation rather than Internet architecture. They are offered for context and are not requirements of this document.<a href="#appendix-B-1" class="pilcrow">¶</a></p>
+<ul class="normal">
+<li class="normal" id="appendix-B-2.1">
+          <p id="appendix-B-2.1.1"><strong>Outcome-based mandates.</strong> Requirements should specify the assurance outcomes needed, such as a level of assurance together with any binding or privacy characteristics the context requires, rather than particular technologies, consistent with <span>[<a href="#IAB-Statement-2026" class="cite xref">IAB-Statement-2026</a>]</span>, <span>[<a href="#Ofcom-HEAA" class="cite xref">Ofcom-HEAA</a>]</span> and <span>[<a href="#EC-Art28" class="cite xref">EC-Art28</a>]</span>.<a href="#appendix-B-2.1.1" class="pilcrow">¶</a></p>
+</li>
+        <li class="normal" id="appendix-B-2.2">
+          <p id="appendix-B-2.2.1"><strong>Certification.</strong> Providers, in-house checks and upstream signals relied on for compliance could be certified under schemes that cover system-level properties as well as accuracy, supported by test purchasing.<a href="#appendix-B-2.2.1" class="pilcrow">¶</a></p>
+</li>
+        <li class="normal" id="appendix-B-2.3">
+          <p id="appendix-B-2.3.1"><strong>Presumption of compliance.</strong> Regulators could consider a presumption of compliance for relying parties that use a certified provider at the required level. This is not current law in most jurisdictions: Ofcom, for example, does not accredit or approve individual providers, and a service remains responsible for its own compliance.<a href="#appendix-B-2.3.1" class="pilcrow">¶</a></p>
+</li>
+        <li class="normal" id="appendix-B-2.4">
+          <p id="appendix-B-2.4.1"><strong>No mandated sole route.</strong> State credentials, wallets and platform signals are valuable sources of age assurance, but should not be mandated as the sole or privileged route for private sector uses. Independent providers should be able to consume them.<a href="#appendix-B-2.4.1" class="pilcrow">¶</a></p>
+</li>
+        <li class="normal" id="appendix-B-2.5">
+          <p id="appendix-B-2.5.1"><strong>Enforcement.</strong> Consistent enforcement, including against offshore non-compliant services, avoids penalising compliant services and displacing users to riskier ones.<a href="#appendix-B-2.5.1" class="pilcrow">¶</a></p>
+</li>
+      </ul>
+</section>
+</div>
+<div id="acknowledgments">
+<section id="appendix-C">
+      <h2 id="name-acknowledgments">
+<a href="#name-acknowledgments" class="section-name selfRef">Acknowledgments</a>
+      </h2>
+<p id="appendix-C-1">The author thanks the authors of draft-knodel-age-arch for setting out the concerns this document responds to, and the participants of the IAB/W3C workshop.<a href="#appendix-C-1" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="authors-addresses">
+<section id="appendix-D">
+      <h2 id="name-authors-address">
+<a href="#name-authors-address" class="section-name selfRef">Author's Address</a>
+      </h2>
+<address class="vcard">
+        <div dir="auto" class="left"><span class="fn nameRole">Iain Corby</span></div>
+<div dir="auto" class="left"><span class="org">Age Verification Providers Association</span></div>
+<div dir="auto" class="left"><span class="locality">London</span></div>
+<div dir="auto" class="left"><span class="country-name">United Kingdom</span></div>
+<div class="email">
+<span>Email:</span>
+<a href="mailto:iain@avpassociation.com" class="email">iain@avpassociation.com</a>
+</div>
+</address>
+</section>
+</div>
+<script>const toc = document.getElementById("toc");
+toc.querySelector("h2").addEventListener("click", e => {
+  toc.classList.toggle("active");
+});
+toc.querySelector("nav").addEventListener("click", e => {
+  toc.classList.remove("active");
+});
+</script>
+</body>
+</html>
